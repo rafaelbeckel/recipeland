@@ -1,0 +1,7 @@
+/vendor
+/test/coverage
+.c9/
+.phpintel/
+.env
+.DS_Store
+phpunit.xml
