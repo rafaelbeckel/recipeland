@@ -13,14 +13,12 @@ require __DIR__ . '/../bootstrap/Autoload.php';
 require __DIR__ . '/../bootstrap/Error.php';
 
 /**
- * Call HTTP response handler 
+ * Set HTTP request & response handler 
  */
 $request = Request::createFromGlobals();
+
 $response = new Response();
-
-$response->setContent('Hi again!');
-
-$response->prepare($request);
+$response->setContent('Hello Again!');
 $response->send();
 
 
