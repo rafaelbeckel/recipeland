@@ -1,0 +1,23 @@
+{
+    "name": "HelloFresh Recipeland",
+    "description": "Your source for the yummest recipes!",
+    "keywords": ["recipes", "food", "hellofresh"],
+    "license": "I'll sue you if you copy this, mua-ha-ha!",
+    "authors": [
+        {
+            "name": "Rafael Beckel",
+            "email": "rafaelbeckel@gmail.com",
+            "role": "CEO"
+        }
+    ],
+    "require": {
+        "php": ">=7.0.0",
+        "filp/whoops": "^2.1",
+        "vlucas/phpdotenv": "^2.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Example\\": "bootstrap/"
+        }
+    }
+}
