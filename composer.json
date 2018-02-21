@@ -2,7 +2,7 @@
     "name": "HelloFresh Recipeland",
     "description": "Your source for the yummest recipes!",
     "keywords": ["recipes", "food", "hellofresh"],
-    "license": "I'll sue you if you copy this, mua-ha-ha!",
+    "license": "WTFPL",
     "authors": [
         {
             "name": "Rafael Beckel",
