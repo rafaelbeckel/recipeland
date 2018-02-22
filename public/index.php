@@ -8,12 +8,12 @@ require __DIR__ . '/../bootstrap/Autoload.php';
 /**
  * Register the error handler
  */
-require __DIR__ . '/../bootstrap/Error.php';
+require __DIR__ . '/../bootstrap/ErrorHandler.php';
 
 /**
- * Set HTTP request & response handler 
+ * Run the App 
  */
-require __DIR__ . '/../bootstrap/Router.php';
+require __DIR__ . '/../bootstrap/Run.php';
 
 
 //@TODO run background scripts after sending response to client
