@@ -8,31 +8,38 @@ class Recipes extends Controller
 {
     
     public function get() {
-        echo __METHOD__;
+        $this->response->setContent(__METHOD__);
+        $this->render();
     }
     
     public function create() {
-        echo __METHOD__;
+        $this->response->setContent(__METHOD__);
+        $this->render();
     }
     
     public function read() {
-        echo __METHOD__;
+        $this->response->setContent(__METHOD__);
+        $this->render();
     }
     
     public function update() {
-        echo __METHOD__;
+        $this->response->setContent(__METHOD__);
+        $this->render();
     }
     
     public function updateField() {
-        echo __METHOD__;
+        $this->response->setContent(__METHOD__);
+        $this->render();
     }
     
     public function remove() {
-        echo __METHOD__;
+        $this->response->setContent(__METHOD__);
+        $this->render();
     }
     
     public function rate() {
-        echo __METHOD__;
+        $this->response->setContent(__METHOD__);
+        $this->render();
     }
 
 }

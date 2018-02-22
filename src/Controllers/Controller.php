@@ -2,10 +2,18 @@
 
 namespace Recipeland\Controllers;
 
-use BadMethodCallException;
+use Recipeland\Http\Response;
 
 abstract class Controller
 {
+    protected $response;
+    
+    
+    public function __construct() 
+    {
+        $this->response = new Response;
+    }
+    
     /**
      * Handle calls to missing methods on the controller.
      *
@@ -19,4 +27,15 @@ abstract class Controller
     {
         throw new BadMethodCallException("Method [$method] does not exist.");
     }
+    
+    protected function render()
+    {
+        $this->response->send();
+    }
+    
+    static public function getNamespace()
+    {
+        return __NAMESPACE__;
+    }
+    
 }
