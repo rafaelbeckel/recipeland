@@ -25,10 +25,11 @@ if (getenv('ENVIRONMENT') == 'development') {
         Lousma:  \"Okay, stand by, Thirteen, we're looking at it.\" \n
         ";
         
+        // @TODO pull message from config or lang class
+        
         // @TODO log the error and send email to developers
         
     });
 }
-
 
 $err->register();
