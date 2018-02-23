@@ -14,15 +14,6 @@ abstract class Controller
         $this->response = new Response;
     }
     
-    /**
-     * Handle calls to missing methods on the controller.
-     *
-     * @param  string  $method
-     * @param  array   $parameters
-     * @return mixed
-     *
-     * @throws \BadMethodCallException
-     */
     public function __call($method, $parameters)
     {
         throw new BadMethodCallException("Method [$method] does not exist.");
@@ -31,11 +22,6 @@ abstract class Controller
     protected function render()
     {
         $this->response->send();
-    }
-    
-    static public function getNamespace()
-    {
-        return __NAMESPACE__;
     }
     
 }
