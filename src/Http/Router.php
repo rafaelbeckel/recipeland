@@ -13,15 +13,6 @@ use Symfony\Component\HttpFoundation\Request;
 class Router
 {
     //@TODO pull from lang file
-<<<<<<< HEAD
-    const EMPTY_ARRAY = "Routes Array cannot be empty";
-    
-    protected $request;
-    protected $routes;
-    protected $controllerFactory;
-    
-    private $_HTTP_Methods = [
-=======
     const EMPTY_ARRAY = "Route collection array cannot be empty";
     const INVALID_ELEMENT_COUNT = "Route array must have 3 elements";
     const FIRST_ELEMENT_MUST_BE_REQUEST_METHOD = "First element must be Request Method ('GET', 'POST', etc.)";
@@ -35,7 +26,6 @@ class Router
     protected $controllerFactory;
     
     private $HTTP_Methods = [
->>>>>>> 03_implement_the_router
         'HEAD',
         'GET',
         'POST',
@@ -48,18 +38,11 @@ class Router
         'CONNECT',
     ];
     
+    
     public function __construct(Array $routes)
     {
-<<<<<<< HEAD
-        $this->validateRoutesArray($routes);
-        
-        $this->request = $request;
-        $this->routes = $routes;
-        $this->setControllerFactory(new ControllerFactory);
-=======
         $this->setControllerFactory(new ControllerFactory);
         $this->setRoutes($routes);
->>>>>>> 03_implement_the_router
     }
     
     
@@ -79,19 +62,12 @@ class Router
     }
     
     
-<<<<<<< HEAD
-    public function setControllerFactory(FactoryInterface $factory)
-=======
     public function setControllerFactory(FactoryInterface $factory): void
->>>>>>> 03_implement_the_router
     {
         $this->controllerFactory = $factory;
     }
     
     
-<<<<<<< HEAD
-    protected function dispatch()
-=======
     public function setRoutes(Array $routes): void
     {
         $this->validateRoutes($routes);
@@ -100,22 +76,14 @@ class Router
     
     
     protected function parseRequest(): array
->>>>>>> 03_implement_the_router
     {
         $path = $this->request->getPathInfo();
         $httpMethod = $this->request->getMethod();
         
-<<<<<<< HEAD
-        $return = $dispatcher->dispatch($httpMethod, $path);
-        
-        $safe_return = array_replace([0,'',[]], $return);
-        return $safe_return;
-=======
         $dispatcher = $this->getDispatcher();
         $return = $dispatcher->dispatch($httpMethod, $path);
         
         return array_replace([0,'',[]], $return);
->>>>>>> 03_implement_the_router
     }
     
     
@@ -143,24 +111,12 @@ class Router
     }
     
     
-<<<<<<< HEAD
-    protected function validateRoutesArray(Array $routes) 
-=======
     protected function validateRoutes(Array $routes): void
->>>>>>> 03_implement_the_router
     {
         if (empty($routes))
             throw new InvalidArgumentException(self::EMPTY_ARRAY);
         
         foreach ($routes as $route)
-<<<<<<< HEAD
-            if (!is_array($route) || empty($route) || count($route) !== 3)
-                throw new InvalidArgumentException();
-            
-            // First item must be the HTTP Method
-            //if ($)
-                
-=======
             $this->validateRoute($route);
     }
     
@@ -178,6 +134,5 @@ class Router
             
         if (! preg_match(self::AT_PATTERN, $route[2]))
             throw new InvalidArgumentException(self::THIRD_ELEMENT_MUST_BE_CONTROLLER_AND_ACTION);
->>>>>>> 03_implement_the_router
     }
 }
