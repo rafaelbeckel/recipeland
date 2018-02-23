@@ -8,6 +8,7 @@ use \InvalidArgumentException;
 use Recipeland\Http\Request;
 use Recipeland\Http\Router;
 use \Mockery as m;
+use \TypeError;
 
 class RouterTest extends TestCase
 {
@@ -31,12 +32,12 @@ class RouterTest extends TestCase
         
         // Router will ask the factory to build the correct Controller 
         $factory->shouldReceive('build')->with('Bar')->once()
-                    ->andReturn($controller); 
+                ->andReturn($controller); 
                     
         // Let's test our router
-        $router = new Router($this->request, $routes);
+        $router = new Router($routes);
         $router->setControllerFactory($factory);
-        $router->go();
+        $router->go($this->request);
         
         // Router needs to call the right action in the controller
         $controller->shouldHaveReceived('baz')->once();
@@ -46,13 +47,23 @@ class RouterTest extends TestCase
     }
     
     
-    public function test_Route_should_not_accept_empty_routes_array()
+    public function test_Route_should_not_accept_non_array_arguments()
+    {
+        $this->expectException(TypeError::class);
+        
+        $routes = "I am not an array!";
+        
+        $router = new Router($routes);
+    }
+    
+    
+    public function test_Route_should_not_accept_empty_array()
     {
         $this->expectException(InvalidArgumentException::class);
         
         $routes = [];
         
-        $router = new Router($this->request, $routes);
+        $router = new Router($routes);
     }
     
     
@@ -63,10 +74,10 @@ class RouterTest extends TestCase
         $routes = [
             [ 'GET'   , '/foo'            , 'Recipes@get'         ],
             [ 'POST'  , '/foo'            , 'Recipes@create'      ],
-            [ 'PUT'   , 'Recipes@update' ]   //Missing one string
+            [ 'PUT'   , 'Recipes@update' ]  //Missing string
         ];
         
-        $router = new Router($this->request, $routes);
+        $router = new Router($routes);
     }
     
     
@@ -75,14 +86,49 @@ class RouterTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         
         $routes = [
-            [ 'GET'   , '/foo'            , 'Recipes@get'         ],
-            [ 'POST'  , '/foo'            , 'Recipes@create'      ],
-            [ 'PUT'   , 'Recipes@update'  , 'Recipes@update', 'Too Many Strings']
+            [ 'GET'   , '/foo'  , 'Recipes@get'    ],
+            [ 'POST'  , '/foo'  , 'Recipes@create' ],
+            [ 'PUT'   , '/foo'  , 'Recipes@update', 'Too Many Strings']
         ];
         
-        $router = new Router($this->request, $routes);
+        $router = new Router($routes);
     }
     
+    
+    public function test_Route_array_validation_first_element()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        
+        $routes = [
+            [ 'I am not an HTTP Verb'   , '/foo'  , 'Recipes@get'    ],
+        ];
+        
+        $router = new Router($routes);
+    }
+    
+    
+    public function test_Route_array_validation_second_element()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        
+        $routes = [
+            [ 'GET'   , '???'  , 'Recipes@get'    ],
+        ];
+        
+        $router = new Router($routes);
+    }
+    
+    
+    public function test_Route_array_validation_third_element()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        
+        $routes = [
+            [ 'GET'   , '/foo'  , 'No_Symbol'    ],
+        ];
+        
+        $router = new Router($routes);
+    }
     
     public function tearDown() {
         m::close();
