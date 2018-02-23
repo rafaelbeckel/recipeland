@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit bootstrap="bootstrap/Autoload.php"
+<phpunit backupGlobals="false"
+         backupStaticAttributes="false"
+         bootstrap="vendor/autoload.php"
          colors="true"
          convertErrorsToExceptions="true"
          convertNoticesToExceptions="true"
@@ -9,18 +11,10 @@
          syntaxCheck="false">
     <testsuites>
         <testsuite name="Application Test Suite">
-            <directory>./tests/</directory>
+            <directory>tests</directory>
         </testsuite>
     </testsuites>
     <php>
         <env name="ENVIRONMENT" value="testing"/>
     </php>
-    <filter>
-        <blacklist>
-              <directory>./vendor</directory>
-        </blacklist>
-        <whitelist>
-              <directory>./src</directory>
-        </whitelist>
-    </filter>
 </phpunit>
