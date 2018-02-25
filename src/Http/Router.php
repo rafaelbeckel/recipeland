@@ -6,12 +6,16 @@ use Assert\Assertion;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 use \InvalidArgumentException;
+use Recipeland\Interfaces\RouterInterface;
 use Recipeland\Interfaces\FactoryInterface;
 use Recipeland\Controllers\ControllerFactory;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
-class Router
+
+class Router implements RouterInterface
 {
+    
     //@TODO pull from lang file
     const EMPTY_ARRAY = "Route collection array cannot be empty";
     const INVALID_ELEMENT_COUNT = "Route array must have 3 elements";
@@ -49,16 +53,9 @@ class Router
     public function go(Request $request): void
     {
         $this->request = $request;
-        list($status, $route, $arguments) = $this->parseRequest();
-        
-        if ($status == Dispatcher::NOT_FOUND)
-            $this->callController('Errors@not_found');
-                
-        if ($status == Dispatcher::METHOD_NOT_ALLOWED)
-            $this->callController('Errors@method_not_allowed');
-                
-        if ($status == Dispatcher::FOUND)
-            $this->callController($route, $arguments);
+        $route = $this->parseRequest();
+
+        $this->callController($route['path'], $route['arguments']);
     }
     
     
@@ -76,6 +73,23 @@ class Router
     
     
     protected function parseRequest(): array
+    {
+        list($status, $path, $arguments) = $this->dispatch();
+        
+        if ($status == Dispatcher::NOT_FOUND)
+            $path = 'Errors@not_found';
+        
+        if ($status == Dispatcher::METHOD_NOT_ALLOWED)
+            $path = 'Errors@method_not_allowed';
+        
+        return [
+            'path'      => $path,
+            'arguments' => $arguments
+        ];
+    }
+    
+    
+    protected function dispatch()
     {
         $path = $this->request->getPathInfo();
         $httpMethod = $this->request->getMethod();
