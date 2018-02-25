@@ -12,20 +12,12 @@ use \TypeError;
 
 class RouterTest extends TestCase
 {
-    public $request;
-    
-    public function setUp()
-    {
-        $this->request = Request::create( '/foo',  'GET' );
-    }
-    
     
     public function test_Router_calls_the_right_controller_and_action()
     {
-        $routes = [
-           // Method    URL Path  Controller@action
-            [ 'GET'   , '/foo'  , 'Bar@baz' ]
-        ];
+        $request = Request::create( '/foo',  'GET' );
+        
+        $routes = [[ 'GET'   , '/foo'  , 'Bar@baz' ]];
         
         $factory = m::mock(ControllerFactory::class);
         $controller = m::spy(Controller::class);
@@ -38,10 +30,64 @@ class RouterTest extends TestCase
         // Let's call our router
         $router = new Router($routes);
         $router->setControllerFactory($factory);
-        $router->go($this->request);
+        $router->go($request);
         
         // Router needs to call the right action in the controller
         $controller->shouldHaveReceived('baz')->once();
+        
+        //Ugly workaround for Mockery BUG #785
+        $this->addToAssertionCount(1);
+    }
+    
+    
+    public function test_Router_calls_non_existent_route()
+    {
+        $request = Request::create( '/fooo',  'GET' );
+        
+        $routes = [[ 'GET'   , '/foo'  , 'Bar@baz' ]];
+        
+        $factory = m::mock(ControllerFactory::class);
+        $controller = m::spy(Controller::class);
+        
+        // Router will ask the factory to build the Error Controller 
+        $factory->shouldReceive('build')
+                ->with('Errors')->once()
+                ->andReturn($controller); 
+                    
+        // Let's call our router
+        $router = new Router($routes);
+        $router->setControllerFactory($factory);
+        $router->go($request);
+        
+        // Router will call not_found action
+        $controller->shouldHaveReceived('not_found')->once();
+        
+        //Ugly workaround for Mockery BUG #785
+        $this->addToAssertionCount(1);
+    }
+    
+    
+    public function test_Router_calls_invalid_http_verb()
+    {
+        $request = Request::create( '/foo',  'POST' );
+        
+        $routes = [[ 'GET'   , '/foo'  , 'Bar@baz' ]];
+        
+        $factory = m::mock(ControllerFactory::class);
+        $controller = m::spy(Controller::class);
+        
+        // Router will ask the factory to build the Error Controller 
+        $factory->shouldReceive('build')
+                ->with('Errors')->once()
+                ->andReturn($controller);
+                    
+        // Let's call our router
+        $router = new Router($routes);
+        $router->setControllerFactory($factory);
+        $router->go($request);
+        
+        // Router will call method_not_allowed action
+        $controller->shouldHaveReceived('method_not_allowed')->once();
         
         //Ugly workaround for Mockery BUG #785
         $this->addToAssertionCount(1);
