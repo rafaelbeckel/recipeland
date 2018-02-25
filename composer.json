@@ -19,7 +19,9 @@
         "psr/log": "^1.0",
         "psr/cache": "^1.0",
         "monolog/monolog": "^1.23",
-        "beberlei/assert": "^2.9"
+        "beberlei/assert": "^2.9",
+        "league/oauth2-server": "^7.0",
+        "doctrine/orm": "^2.6"
     },
     "autoload": {
         "psr-4": {
