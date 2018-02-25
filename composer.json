@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "php": ">=7.1.0",
+        "php": ">=7.1.14",
         "filp/whoops": "^2.1",
         "vlucas/phpdotenv": "^2.4",
         "symfony/http-foundation": "^4.0",
