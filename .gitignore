@@ -4,4 +4,3 @@
 .phpintel/
 .env
 .DS_Store
-phpunit.xml
