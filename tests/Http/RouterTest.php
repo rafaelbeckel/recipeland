@@ -1,7 +1,7 @@
 <?php
 namespace Recipeland\Http;
 
-use Recipeland\Interfaces\FactoryInterface;
+use Recipeland\Controllers\ControllerFactory;
 use Recipeland\Controllers\Controller;
 use PHPUnit\Framework\TestCase;
 use \InvalidArgumentException;
@@ -27,14 +27,15 @@ class RouterTest extends TestCase
             [ 'GET'   , '/foo'  , 'Bar@baz' ]
         ];
         
-        $factory = m::mock(FactoryInterface::class);
+        $factory = m::mock(ControllerFactory::class);
         $controller = m::spy(Controller::class);
         
         // Router will ask the factory to build the correct Controller 
-        $factory->shouldReceive('build')->with('Bar')->once()
+        $factory->shouldReceive('build')
+                ->with('Bar')->once()
                 ->andReturn($controller); 
                     
-        // Let's test our router
+        // Let's call our router
         $router = new Router($routes);
         $router->setControllerFactory($factory);
         $router->go($this->request);
