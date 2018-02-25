@@ -1,0 +1,196 @@
+#!/bin/bash
+
+b=$(tput bold) #bold text
+n=$(tput sgr0) #normal text
+
+echo ""
+
+show_help() {
+    echo "      ${b}Recipe from Recipeland - Version 0.1 ${n}"
+    echo ""
+    echo "      This script installs and runs Recipeland,"
+    echo "      a tasty Web API for managing delicious recipes!"
+    echo ""
+    echo ""
+    echo "      ${b}USAGE: ./recipe [command] ${n}"
+    echo ""
+    echo ""
+    echo "      ${b}Commands:"
+    echo ""
+    echo "        ${b} help ${n}"
+    echo "         Shows this message."
+    echo ""
+    echo "        ${b} prepare ${n}"
+    echo "         Generates .env file and"
+    echo "         configure server's domain name."
+    echo ""
+    echo "        ${b} cook ${n}"
+    echo "         Run all docker containers in daemon mode"
+    echo "         and installs all necessary packages using composer."
+    echo "         API will be ready to be consumed in the configured domain name."
+    echo "         If there's no .env file present, we will automatically create one."
+    echo ""
+    echo "        ${b} boil ${n}"
+    echo "         Same as cook, but in verbose mode"
+    echo ""
+    echo "        ${b} taste ${n}"
+    echo "         Run all unit tests."
+    echo "         It needs a running container to work."
+    echo ""
+    echo "        ${b} finish ${n}"
+    echo "         Stop all docker containers"
+    echo ""
+    exit 0
+}
+
+is_installed() {
+    which $1
+    if [ $? -eq 0 ]
+    then
+        $1 --version | grep -i "$1 version"
+        if [ $? -eq 0 ]
+        then
+            true
+        else
+            false
+        fi
+    else
+        false
+    fi
+}
+
+check_dependencies() {
+    echo "Checking for Docker and Docker-Compose..."
+    
+    echo ""
+    if ! is_installed "docker"
+    then
+        echo "You need ${b}Docker${n} to use this script."
+        echo "Visit ${b}https://docs.docker.com/install${n} for specific instructions."
+    fi
+    
+    echo ""
+    if ! is_installed "docker-compose"
+    then
+        echo "You need ${b}Docker-Compose${n} to use this script."
+        echo "Visit ${b}https://docs.docker.com/compose/install${n} for specific instructions."
+        exit 1
+    fi
+
+    echo ""
+}
+
+read_var() {
+    VAR=$(grep $1 $2 | xargs)
+    IFS="=" read -ra VAR <<< "$VAR"
+    echo ${VAR[1]}
+}
+
+prepare() {
+    if [ ! -f ".env.example" ]
+    then
+        echo "Mandatory .env.example file not found!"
+        exit 1
+    fi
+
+    if [ ! -f ".env" ]
+    then
+        echo "Generating .env file..."
+        cp .env.example .env
+        echo ".env file was generated!"
+        echo "These are the default values:"
+        echo "${b}"
+        cat .env
+        echo "${n}"
+        echo ""
+        read -p "Will you accept all the defaults? ${b} (y/N) ${n}" -n 1 -r
+        echo ""
+        if [[ ! $REPLY =~ ^[Yy]$ ]]
+        then
+            echo "Please edit ${b}.env${n} file and start this script again."
+            echo "Bye, and happy editing!"
+            echo ""
+            exit 0
+        else
+            echo "You accepted the default values."
+            echo "Let's continue our work..."
+            echo ""
+        fi
+    fi
+
+    echo "Configuring web server's domain name..."
+    DOMAIN=$(readvar DOMAIN .env)
+    sed -i "s/server_name.*/server_name ${DOMAIN}/" ./docker/nginx/default.conf
+    
+    echo "Domain name set to ${b}$DOMAIN${n}"
+
+    echo ""
+    echo "All set! We are ready to cook!"
+    echo ""
+}
+
+cook() {
+    if [ ! -f ".env" ]
+    then
+        prepare
+    fi
+
+    DOMAIN=$(read_var DOMAIN .env)
+    echo "The API will start listening at ${b}https://$DOMAIN${n}"
+
+    check_dependencies
+
+    if [ "$1" == "verbose" ]
+    then
+        echo "Press ${b}Ctrl+C${n} to exit."
+        docker-compose up
+        finish
+    else
+        docker-compose up -d
+        echo "Run ${b}'./recipe finish'${n} to stop."
+    fi
+
+    echo ""
+}
+
+boil() {
+    cook "verbose"
+}
+
+taste() {
+    echo "Let's test our application. Is the container running?"
+    check_dependencies
+    if [ $(docker inspect -f '{{.State.Running}}' recipeland_php) = "true" ]
+    then
+        echo "Running PHPUnit..."
+        docker exec -it recipeland_php ./vendor/bin/phpunit
+    else
+        echo "Container is not running! Start the application with ./recipe cook first."
+    fi
+    echo ""
+}
+
+finish() {
+    check_dependencies
+    docker-compose down
+    echo ""
+    echo "${b}You finished cooking. Delicious!${n}"
+    echo ""
+}
+
+case $1 in
+    "help")
+        show_help ;;
+    "prepare")
+        prepare ;;
+    "cook")
+        cook ;;
+    "boil")
+        boil ;;
+    "taste")
+        taste ;;
+    "finish")
+        finish ;;
+    *)
+        show_help ;;
+esac
