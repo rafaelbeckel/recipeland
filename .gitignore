@@ -1,5 +1,6 @@
 /vendor
-/test/coverage
+/tests/coverage
+/tests/_reports
 .c9/
 .phpintel/
 .env

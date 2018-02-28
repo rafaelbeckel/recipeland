@@ -1,11 +1,20 @@
 <?php
-use Recipeland\Http\Request;
+use Recipeland\App;
 use Recipeland\Http\Router;
+use Recipeland\Http\Response\Sender;
+use GuzzleHttp\Psr7\ServerRequest as Request;
 
-$request = Request::start();
+// Setup our URL routes
+$router = new Router(include('../src/routes.php'));
+$app = new App($router);
 
-$routes = include('../src/routes.php');
-$router = new Router($routes);
+// Do the magic
+$request = Request::fromGlobals();
+$response = $app->go($request);
 
-$response = $router->go($request);
-$response->send();
+// Send response to client
+$sender = new Sender($response);
+$sender->send($response);
+
+// Run background jobs
+$app->close($request, $response);

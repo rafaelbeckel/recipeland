@@ -3,6 +3,7 @@
 namespace Recipeland\Controllers;
 
 use Recipeland\Interfaces\FactoryInterface;
+use \RuntimeException;
 
 class ControllerFactory implements FactoryInterface
 {
@@ -13,7 +14,7 @@ class ControllerFactory implements FactoryInterface
             return new $class;
         
         } else { 
-            throw new RuntimeException("Class not found");
+            throw new RuntimeException('Class not Found');
         }
     }
 }

@@ -4,6 +4,7 @@ namespace Recipeland;
 
 use GuzzleHttp\Psr7\ServerRequest as Request;
 use Recipeland\Interfaces\RouterInterface;
+use Recipeland\Interfaces\StackInterface;
 use Psr\Http\Message\ResponseInterface;
 use Recipeland\Controllers\Controller;
 use PHPUnit\Framework\TestCase;
@@ -17,12 +18,23 @@ class AppTest extends TestCase
     {
         $request = new Request( 'GET', '/foo' );
         
+        $controller = m::mock(Controller::class);
+        
         $router = m::mock(RouterInterface::class);
         $router->shouldReceive('getControllerFor')
                ->with($request)->once()
-               ->andReturn(m::spy(Controller::class));
+               ->andReturn($controller);
+               
+        $stack = m::mock(StackInterface::class);
+        $stack->shouldReceive('append')
+              ->with($controller)->once()
+              ->andReturn(m::spy(Controller::class))
+              ->shouldReceive('resetPointerToFirstItem')
+              ->shouldReceive('handle')
+              ->with($request)->once()
+              ->andReturn(m::mock(ResponseInterface::class));
         
-        $app = new App($router);
+        $app = new App($router, $stack);
         
         $response = $app->go($request);
 
