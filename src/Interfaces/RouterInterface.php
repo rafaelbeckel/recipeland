@@ -2,13 +2,14 @@
 
 namespace Recipeland\Interfaces;
 
-use Symfony\Component\HttpFoundation\Request;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Message\ServerRequestInterface as RequestInterface;
 
 interface RouterInterface
 {
     public function __construct(Array $routes);
     
-    public function go(Request $request): void;
+    public function getControllerFor(RequestInterface $request): MiddlewareInterface;
     
     public function setRoutes(Array $routes): void;
 }

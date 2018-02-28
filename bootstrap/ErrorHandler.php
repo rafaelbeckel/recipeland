@@ -14,7 +14,7 @@ if (getenv('ENVIRONMENT') == 'development') {
 } else {
     $err->pushHandler(function($e){
         /**
-         * Some generic error message for production environment
+         * Generic error message for production environment
          */
         echo "
         Swigert: \"Okay, Houston, we've had a problem here.\"       \n

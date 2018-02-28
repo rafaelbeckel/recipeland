@@ -6,8 +6,10 @@ use Assert\Assertion;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 use \InvalidArgumentException;
+use Psr\Http\Server\MiddlewareInterface;
 use Recipeland\Interfaces\RouterInterface;
 use Recipeland\Interfaces\FactoryInterface;
+use Psr\Http\Message\ServerRequestInterface as RequestInterface;
 use Recipeland\Controllers\ControllerFactory;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,6 +29,7 @@ class Router implements RouterInterface
     
     protected $routes;
     protected $request;
+    protected $controller;
     protected $controllerFactory;
     
     private $HTTP_Methods = [
@@ -43,19 +46,22 @@ class Router implements RouterInterface
     ];
     
     
-    public function __construct(Array $routes)
+    public function __construct(Array $routes, FactoryInterface $factory = null)
     {
-        $this->setControllerFactory(new ControllerFactory);
         $this->setRoutes($routes);
+        
+        if (! $factory)
+            $this->setControllerFactory(new ControllerFactory);
     }
     
     
-    public function go(Request $request): void
+    public function getControllerFor(RequestInterface $request): MiddlewareInterface
     {
         $this->request = $request;
         $route = $this->parseRequest();
 
-        $this->callController($route['path'], $route['arguments']);
+        $this->setController($route['path'], $route['arguments']);
+        return $this->controller;
     }
     
     
@@ -82,16 +88,13 @@ class Router implements RouterInterface
         if ($status == Dispatcher::METHOD_NOT_ALLOWED)
             $path = 'Errors@method_not_allowed';
         
-        return [
-            'path'      => $path,
-            'arguments' => $arguments
-        ];
+        return ['path'=>$path, 'arguments'=>$arguments];
     }
     
     
-    protected function dispatch()
+    protected function dispatch(): array
     {
-        $path = $this->request->getPathInfo();
+        $path = $this->request->getRequestTarget();
         $httpMethod = $this->request->getMethod();
         
         $dispatcher = $this->getDispatcher();
@@ -112,15 +115,16 @@ class Router implements RouterInterface
     }
     
     
-    protected function callController(string $route, Array $arguments=[]): void
+    protected function setController(string $route, Array $arguments=[]): void
     {
         list($className, $method) = explode("@", $route);
         try {
-            $controller = $this->controllerFactory->build($className);
-            $controller->$method($arguments);
+            $this->controller = $this->controllerFactory->build($className);
+            $this->controller->setAction($method);
+            $this->controller->setArguments($arguments);
             
         } catch (Exception $e) {
-            $this->callController('Errors@not_found');
+            $this->setController('Errors@not_found');
         }
     }
     
