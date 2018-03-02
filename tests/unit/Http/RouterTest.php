@@ -1,5 +1,6 @@
 <?php
-namespace Recipeland\Http;
+
+namespace Tests\Http;
 
 use GuzzleHttp\Psr7\ServerRequest as Request;
 use Recipeland\Controllers\ControllerFactory;
@@ -7,14 +8,17 @@ use Recipeland\Controllers\Controller;
 use PHPUnit\Framework\TestCase;
 use \InvalidArgumentException;
 use Recipeland\Http\Router;
+use Tests\TestSuite;
 use \Mockery as m;
 use \TypeError;
 
-class RouterTest extends TestCase
+class RouterTest extends TestSuite
 {
     
-    public function test_Router_calls_the_right_controller_and_action()
+    public function test_Router_controller_and_action()
     {
+        echo "Router: should return the right controller and action from a routes Array and a Request";
+        
         $request = new Request( 'GET', '/foo' );
         $router = new Router([[ 'GET', '/foo', 'Bar@baz' ]]);
         
@@ -37,8 +41,10 @@ class RouterTest extends TestCase
     }
     
     
-    public function test_Router_calls_the_right_controller_and_action_with_arguments()
+    public function test_Router_controller_and_action_with_arguments()
     {
+        echo "Router: should return the right controller and action, with arguments";
+        
         $request = new Request( 'GET', '/foo/1234/make/Coffee' );
         $router = new Router([[ 'GET', '/foo/{id}/make/{name}', 'Bar@baz' ]]);
         
@@ -62,8 +68,10 @@ class RouterTest extends TestCase
     }
     
     
-    public function test_Router_calls_non_existent_route()
+    public function test_Router_non_existent_route()
     {
+        echo "Router: should call Error controller @ not_found action for a non-existent route";
+        
         $request = new Request( 'GET', '/foooooooo' );
         $router = new Router([[ 'GET', '/foo', 'Bar@baz' ]]);
         
@@ -88,6 +96,8 @@ class RouterTest extends TestCase
     
     public function test_Router_calls_partial_route_name()
     {
+        echo "Router: should call Error controller @ not_found action for a route with incomplete name";
+        
         $request = new Request( 'GET', '/fo' );
         $router = new Router([[ 'GET', '/foo', 'Bar@baz' ]]);
         
@@ -112,6 +122,8 @@ class RouterTest extends TestCase
     
     public function test_Router_calls_invalid_http_verb()
     {
+        echo "Router: should call Error controller @ method_not_allowed action for a wrong HTTP method call";
+        
         $request = new Request( 'POST', '/foo' );
         $router = new Router([[ 'GET',  '/foo', 'Bar@baz' ]]);
         
@@ -132,98 +144,4 @@ class RouterTest extends TestCase
         // Ugly workaround for Mockery BUG #785
         $this->addToAssertionCount(3);
     }
-    
-    
-    public function test_Route_should_not_accept_non_array_arguments()
-    {
-        $this->expectException(TypeError::class);
-        
-        $routes = "I am not an array!";
-        
-        $router = new Router($routes);
-    }
-    
-    
-    public function test_Route_should_not_accept_empty_array()
-    {
-        $this->expectException(InvalidArgumentException::class);
-        
-        $routes = [];
-        
-        $router = new Router($routes);
-    }
-    
-    
-    public function test_Route_array_validation_missing_string()
-    {
-        $this->expectException(InvalidArgumentException::class);
-        
-        $routes = [
-            [ 'GET' , '/foo'            , 'Recipes@get'         ],
-            [ 'POST', '/foo'            , 'Recipes@create'      ],
-            [ 'PUT' , 'Recipes@update' ]  //Missing string
-        ];
-        
-        $router = new Router($routes);
-    }
-    
-    
-    public function test_Route_array_validation_extra_string()
-    {
-        $this->expectException(InvalidArgumentException::class);
-        
-        $routes = [
-            [ 'GET' , '/foo', 'Recipes@get'    ],
-            [ 'POST', '/foo', 'Recipes@create' ],
-            [ 'PUT' , '/foo', 'Recipes@update', 'Too Many Strings']
-        ];
-        
-        $router = new Router($routes);
-    }
-    
-    
-    public function test_Route_array_validation_first_element()
-    {
-        $this->expectException(InvalidArgumentException::class);
-        
-        $routes = [
-            [ 'I am not an HTTP Verb', '/foo', 'Recipes@get'],
-        ];
-        
-        $router = new Router($routes);
-    }
-    
-    
-    public function test_Route_array_validation_second_element()
-    {
-        $this->expectException(InvalidArgumentException::class);
-        
-        $routes = [
-            [ 'GET', '???', 'Recipes@get'],
-        ];
-        
-        $router = new Router($routes);
-    }
-    
-    
-    public function test_Route_array_validation_third_element()
-    {
-        $this->expectException(InvalidArgumentException::class);
-        
-        $routes = [
-            [ 'GET', '/foo', 'No_Symbol'],
-        ];
-        
-        $router = new Router($routes);
-    }
-    
-    public function tearDown() {
-        m::close();
-    }
-}
-
-
-class StubController extends Controller
-{
-    public function get() {}
 }
