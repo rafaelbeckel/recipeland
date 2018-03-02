@@ -13,12 +13,11 @@ class Sender
         $this->response = $response;
     }
     
-    public function send(): Sender
+    public function send(): void
     {
         $this->sendHeaders();
         $this->sendContent();
         $this->clearBuffers();
-        return $this;
     }
     
     protected function sendHeaders(): void  
@@ -31,19 +30,20 @@ class Sender
         $reason  = $r->getReasonPhrase();;
         $httpString = sprintf('HTTP/%s %s %s', $version, $status, $reason);
         
-        // headers
-        if (! headers_sent())
+        if (! headers_sent()) {
+            // custom headers
             foreach ($h as $key => $values)
                 foreach ($values as $value)
                     header($key.': '.$value, false);
         
-        // status
-        header($httpString, true, $status);
+            // status
+            header($httpString, true, $status);
+        }
     }
     
     protected function sendContent() 
     {
-        echo $this->response->getBody();
+        echo (string) $this->response->getBody();
     }
     
     protected function clearBuffers()

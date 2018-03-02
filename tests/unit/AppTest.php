@@ -7,15 +7,17 @@ use Recipeland\Interfaces\RouterInterface;
 use Recipeland\Interfaces\StackInterface;
 use Psr\Http\Message\ResponseInterface;
 use Recipeland\Controllers\Controller;
-use PHPUnit\Framework\TestCase;
 use Recipeland\Http\Router;
+use Tests\TestSuite;
 use Recipeland\App;
 use \Mockery as m;
 
-class AppTest extends TestCase
+class AppTest extends TestSuite
 {
     public function test_go_method_returns_psr7_Response_instance()
     {
+        echo "App: go() method must return a PSR-7 Response object";
+        
         $request = new Request( 'GET', '/foo' );
         
         $controller = m::mock(Controller::class);

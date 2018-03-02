@@ -144,4 +144,9 @@ class RouterTest extends TestSuite
         // Ugly workaround for Mockery BUG #785
         $this->addToAssertionCount(3);
     }
+    
+    public function test_last () {
+        // Just a spacer for my fancy custom output.
+        $this->assertTrue(true);
+    }
 }
