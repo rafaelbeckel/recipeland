@@ -20,9 +20,9 @@ services:
         container_name: recipeland_php # Name used to run phpunit via ./recipe taste
         volumes:
             - ./:/var/www/html
-        # links:
-        #     - postgres
-        #     - redis
+        links:
+            - postgres
+            - redis
 
     composer:
         image: composer:1.6.3
@@ -31,19 +31,19 @@ services:
         volumes:
             - .:/app
 
-    # postgres:
-    #     image: onjin/alpine-postgres:9.5
-    #     restart: unless-stopped
-    #     ports:
-    #         - "5432:5432"
-    #     environment:
-    #         LC_ALL: C.UTF-8
-    #         POSTGRES_USER: hellofresh
-    #         POSTGRES_PASSWORD: hellofresh
-    #         POSTGRES_DB: hellofresh
+    postgres:
+        image: postgres:9.6.7-alpine
+        restart: unless-stopped
+        ports:
+            - "5432:5432"
+        environment:
+            LC_ALL: C.UTF-8
+            POSTGRES_USER: hellofresh
+            POSTGRES_PASSWORD: hellofresh
+            POSTGRES_DB: hellofresh
 
-    # redis:
-    #     image: sickp/alpine-redis:3.2.2
-    #     restart: unless-stopped
-    #     ports:
-    #         - "6379:6379"
+    redis:
+        image: redislabs/redisearch:1.0.8
+        restart: unless-stopped
+        ports:
+            - "6379:6379"
