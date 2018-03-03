@@ -55,5 +55,4 @@ class App
     {
         // do nothing... for now.
     }
-
 }

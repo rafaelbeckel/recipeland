@@ -9,19 +9,18 @@ use Psr\Http\Message\ServerRequestInterface as RequestInterface;
 use Psr\Http\Server\RequestHandlerInterface as HandlerInterface;
 use Psr\Http\Server\MiddlewareInterface;
 
-
 /**
- * A Controller in Recipeland is a special kind of middleware, 
+ * A Controller in Recipeland is a special kind of middleware,
  * intended to be the last one called in the Middleware Stack.
- * 
- * Instead of doing the traditional __call black magic hackery, 
+ *
+ * Instead of doing the traditional __call black magic hackery,
  * it implements the default handler interface from PSR-7 and
  * additionally provides a set of useful specific methods.
- * 
+ *
  * In our current implementation, the controller is first instantiated
  * by the Router, who calls the setAction() method to store the name
  * of the method to be called. Then, the controller is injected in the
- * end of the Middleware Stack, and the process() method will call 
+ * end of the Middleware Stack, and the process() method will call
  * the actual action method.
  */
 abstract class Controller implements MiddlewareInterface, ControllerInterface
@@ -32,7 +31,7 @@ abstract class Controller implements MiddlewareInterface, ControllerInterface
     protected $action = 'defaultAction';
     protected $arguments = [];
     
-    public function __construct(ResponseInterface $response = null) 
+    public function __construct(ResponseInterface $response = null)
     {
         if ($response) {
             $this->response = $response;
@@ -93,8 +92,9 @@ abstract class Controller implements MiddlewareInterface, ControllerInterface
     {
         // Call the action set by the router
         $action = $this->action;
-        if (method_exists($this, $action))
+        if (method_exists($this, $action)) {
             $this->$action($this->arguments);
+        }
         
         // We won't call $next, so this will be the last response.
         // It will return back to upper middleware layers.

@@ -20,28 +20,31 @@ class Sender
         $this->clearBuffers();
     }
     
-    protected function sendHeaders(): void  
+    protected function sendHeaders(): void
     {
         $r = $this->response;
         $h = $r->getHeaders();
         
         $version = $r->getProtocolVersion();
         $status  = $r->getStatusCode();
-        $reason  = $r->getReasonPhrase();;
+        $reason  = $r->getReasonPhrase();
+        ;
         $httpString = sprintf('HTTP/%s %s %s', $version, $status, $reason);
         
         if (! headers_sent()) {
             // custom headers
-            foreach ($h as $key => $values)
-                foreach ($values as $value)
+            foreach ($h as $key => $values) {
+                foreach ($values as $value) {
                     header($key.': '.$value, false);
+                }
+            }
         
             // status
             header($httpString, true, $status);
         }
     }
     
-    protected function sendContent() 
+    protected function sendContent()
     {
         echo (string) $this->response->getBody();
     }
@@ -50,7 +53,6 @@ class Sender
     {
         if (function_exists('fastcgi_finish_request')) {
             fastcgi_finish_request();
-            
         } elseif (PHP_SAPI !== 'cli') {
             $this->closeOutputBuffers();
         }
@@ -58,7 +60,8 @@ class Sender
     
     private function closeOutputBuffers()
     {
-        if (ob_get_level()) 
+        if (ob_get_level()) {
             ob_end_flush();
+        }
     }
 }

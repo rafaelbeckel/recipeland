@@ -38,26 +38,31 @@ class RoutesArrayValidator extends Validator
     
     private function validateRoutesArray(array $routes): void
     {
-        if (empty($routes))
+        if (empty($routes)) {
             throw new InvalidArgumentException(self::EMPTY_ARRAY);
+        }
         
-        foreach ($routes as $route)
+        foreach ($routes as $route) {
             $this->validateRoute($route);
+        }
     }
     
     private function validateRoute(array $route): void
     {
-        if (count($route) !== 3)
+        if (count($route) !== 3) {
             throw new InvalidArgumentException(self::INVALID_ELEMENT_COUNT);
+        }
         
-        if (! in_array($route[0], $this->HTTP_Methods))
+        if (! in_array($route[0], $this->HTTP_Methods)) {
             throw new InvalidArgumentException(self::FIRST_ELEMENT_MUST_BE_REQUEST_METHOD);
+        }
             
-        if (! preg_match(self::URL_PATH_PATTERN, $route[1]))
+        if (! preg_match(self::URL_PATH_PATTERN, $route[1])) {
             throw new InvalidArgumentException(self::SECOND_ELEMENT_MUST_BE_URL_PATH);
+        }
             
-        if (! preg_match(self::AT_PATTERN, $route[2]))
+        if (! preg_match(self::AT_PATTERN, $route[2])) {
             throw new InvalidArgumentException(self::THIRD_ELEMENT_MUST_BE_CONTROLLER_AND_ACTION);
+        }
     }
 }
-

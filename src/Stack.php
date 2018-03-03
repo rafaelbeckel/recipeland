@@ -15,11 +15,13 @@ abstract class Stack implements StackInterface, HandlerInterface
     
     public function __construct(array $items = null)
     {
-        if ($items)
+        if ($items) {
             $this->items = $items;
+        }
         
-        foreach($this->items as $key => $item)
+        foreach ($this->items as $key => $item) {
             $this->items[$key] = $this->getInstanceOf($item);
+        }
     }
     
     public function getAll(): array
@@ -27,12 +29,14 @@ abstract class Stack implements StackInterface, HandlerInterface
         return self::items;
     }
     
-    public function append($item) {
+    public function append($item)
+    {
         $object = $this->getInstanceOf($item);
         array_push($this->items, $item);
     }
     
-    public function prepend($item) {
+    public function prepend($item)
+    {
         $object = $this->getInstanceOf($item);
         array_unshift($this->items, $item);
     }
@@ -66,26 +70,30 @@ abstract class Stack implements StackInterface, HandlerInterface
     {
         $current = $this->getCurrentItem();
         
-        if ($current === false) // Last item
+        if ($current === false) { // Last item
             return new Response();
+        }
         
         $middleware = $this->getInstanceOf($current);
         
         $this->movePointerToNextItem();
         
-        return $middleware->process($request, $this); 
+        return $middleware->process($request, $this);
     }
     
     private function getInstanceOf($class): MiddlewareInterface
     {
-        if (is_string($class) && class_exists($class))
+        if (is_string($class) && class_exists($class)) {
             $middleware = new $class();
+        }
             
-        if (is_object($class) && $class instanceof MiddlewareInterface)
+        if (is_object($class) && $class instanceof MiddlewareInterface) {
             $middleware = $class;
+        }
         
-        if (empty($middleware) || ! $middleware instanceof MiddlewareInterface)
+        if (empty($middleware) || ! $middleware instanceof MiddlewareInterface) {
             $middleware = $this->createEmptyMiddleware();
+        }
         
         return $middleware;
     }
@@ -93,13 +101,10 @@ abstract class Stack implements StackInterface, HandlerInterface
     private function createEmptyMiddleware(): MiddlewareInterface
     {
         return new class implements MiddlewareInterface {
-            
             public function process(RequestInterface $request, HandlerInterface $next): ResponseInterface
             {
                 return $next->handle($request);
             }
-            
         };
     }
-    
 }

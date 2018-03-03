@@ -14,7 +14,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Recipeland\Helpers\Validators\RoutesArrayValidator;
 use Psr\Http\Message\ServerRequestInterface as RequestInterface;
 
-
 class Router implements RouterInterface
 {
     protected $routes;
@@ -24,7 +23,7 @@ class Router implements RouterInterface
     protected $controllerFactory;
     
     
-    public function __construct(Array $routes, FactoryInterface $factory = null, ValidatorInterface $validator = null)
+    public function __construct(array $routes, FactoryInterface $factory = null, ValidatorInterface $validator = null)
     {
         $this->setControllerFactory($factory);
         $this->setValidator($validator);
@@ -65,11 +64,13 @@ class Router implements RouterInterface
     {
         list($status, $path, $arguments) = $this->dispatch();
         
-        if ($status == Dispatcher::NOT_FOUND)
+        if ($status == Dispatcher::NOT_FOUND) {
             $path = 'Errors@not_found';
+        }
         
-        if ($status == Dispatcher::METHOD_NOT_ALLOWED)
+        if ($status == Dispatcher::METHOD_NOT_ALLOWED) {
             $path = 'Errors@method_not_allowed';
+        }
         
         return ['path'=>$path, 'arguments'=>$arguments];
     }
@@ -89,7 +90,7 @@ class Router implements RouterInterface
     
     protected function getDispatcher(): Dispatcher
     {
-        return \FastRoute\simpleDispatcher(function(RouteCollector $routes){
+        return \FastRoute\simpleDispatcher(function (RouteCollector $routes) {
             foreach ($this->routes as $route) {
                 list($method, $path, $arguments) = $route;
                 $routes->addRoute($method, $path, $arguments);
@@ -98,17 +99,17 @@ class Router implements RouterInterface
     }
     
     
-    protected function setController(string $route, Array $arguments=[]): void
+    protected function setController(string $route, array $arguments=[]): void
     {
         list($className, $method) = explode("@", $route);
         try {
             $this->controller = $this->controllerFactory->build($className);
             $this->controller->setAction($method);
             $this->controller->setArguments($arguments);
-            
         } catch (Exception $e) {
-            if ($className == 'Errors')
+            if ($className == 'Errors') {
                 throw new RuntimeException(self::ERROR_CONTROLLER_NOT_FOUND);
+            }
                 
             $this->setController('Errors@not_found');
         }

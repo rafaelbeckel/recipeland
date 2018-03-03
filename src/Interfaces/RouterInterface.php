@@ -7,9 +7,9 @@ use Psr\Http\Message\ServerRequestInterface as RequestInterface;
 
 interface RouterInterface
 {
-    public function __construct(Array $routes);
+    public function __construct(array $routes);
     
     public function getControllerFor(RequestInterface $request): MiddlewareInterface;
     
-    public function setRoutes(Array $routes): void;
+    public function setRoutes(array $routes): void;
 }
