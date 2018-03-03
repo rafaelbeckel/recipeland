@@ -1,4 +1,5 @@
 /vendor
+/vendor_modified
 /tests/coverage
 /tests/_reports
 .c9/
