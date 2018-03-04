@@ -36,7 +36,6 @@ class CreateAclTables extends AbstractMigration
               ->addColumn('description',  'string',     ['null' => true])
               ->addColumn('created_at',   'timestamp',   ['default' => 'CURRENT_TIMESTAMP'])
               ->addColumn('updated_at',   'timestamp',   ['null' => true])
-              ->addColumn('deleted_at',   'timestamp',   ['null' => true])
               
               ->addIndex('name', ['unique' => true])
               ->create();
@@ -48,7 +47,6 @@ class CreateAclTables extends AbstractMigration
               ->addColumn('role_id',      'biginteger', ['signed' => false])
               ->addColumn('created_at',   'timestamp',   ['default' => 'CURRENT_TIMESTAMP'])
               ->addColumn('updated_at',   'timestamp',   ['null' => true])
-              ->addColumn('deleted_at',   'timestamp',   ['null' => true])
               
               ->addForeignKey('user_id', 'users', 'id', ['delete'=>'CASCADE'])
               ->addForeignKey('role_id', 'roles', 'id', ['delete'=>'CASCADE'])
@@ -63,7 +61,6 @@ class CreateAclTables extends AbstractMigration
               ->addColumn('description',  'string',     ['null' => true])
               ->addColumn('created_at',   'datetime',   ['default' => 'CURRENT_TIMESTAMP'])
               ->addColumn('updated_at',   'datetime',   ['null' => true])
-              ->addColumn('deleted_at',   'datetime',   ['null' => true])
               
               ->addIndex('name', ['unique' => true])
               ->create();
@@ -75,7 +72,6 @@ class CreateAclTables extends AbstractMigration
               ->addColumn('role_id',       'biginteger', ['signed' => false])
               ->addColumn('created_at',    'datetime',   ['default' => 'CURRENT_TIMESTAMP'])
               ->addColumn('updated_at',    'datetime',   ['null' => true])
-              ->addColumn('deleted_at',    'datetime',   ['null' => true])
               
               ->addForeignKey('permission_id', 'permissions', 'id', ['delete'=>'CASCADE'])
               ->addForeignKey('role_id',       'roles',       'id', ['delete'=>'CASCADE'])
