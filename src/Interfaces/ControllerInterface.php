@@ -20,7 +20,7 @@ interface ControllerInterface
     
     public function setStatus(int $code): void;
     
-    public function send(string $body): void;
+    public function setResponseBody(string $body): void;
     
-    public function sendJson(array $json): void;
+    public function setJsonResponse(array $json): void;
 }

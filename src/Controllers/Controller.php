@@ -2,6 +2,7 @@
 
 namespace Recipeland\Controllers;
 
+use \BadMethodCallException;
 use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\ResponseInterface;
 use Recipeland\Interfaces\ControllerInterface;
@@ -75,7 +76,7 @@ abstract class Controller implements MiddlewareInterface, ControllerInterface
         $this->response = $this->response->withStatus($code);
     }
     
-    public function send(string $body): void
+    public function setResponseBody(string $body): void
     {
         $stream = $this->response->getBody();
         $stream->write($body);
@@ -83,13 +84,15 @@ abstract class Controller implements MiddlewareInterface, ControllerInterface
         $this->response = $this->response->withBody($stream);
     }
     
-    public function sendJson(array $json): void
+    public function setJsonResponse(array $json): void
     {
-        $this->send(json_encode($json));
+        $this->setResponseBody(json_encode($json));
     }
     
     public function process(RequestInterface $request, HandlerInterface $next): ResponseInterface
     {
+        //@Todo CHECK PERMISSIONS HERE
+        
         // Call the action set by the router
         $action = $this->action;
         if (method_exists($this, $action)) {
