@@ -42,10 +42,9 @@ class CreateAclTables extends AbstractMigration
               ->create();
               
         
-        $table = $this->table('role_user', ['id'=>false, 'primary_key'=>'id']);
+        $table = $this->table('role_user', ['id'=>false, 'primary_key'=>['user_id','role_id']]);
         
-        $table->addColumn('id',           'biginteger', ['identity' => true, 'signed' => false])
-              ->addColumn('user_id',      'biginteger', ['signed' => false])
+        $table->addColumn('user_id',      'biginteger', ['signed' => false])
               ->addColumn('role_id',      'biginteger', ['signed' => false])
               ->addColumn('created_at',   'timestamp',   ['default' => 'CURRENT_TIMESTAMP'])
               ->addColumn('updated_at',   'timestamp',   ['null' => true])
@@ -70,10 +69,9 @@ class CreateAclTables extends AbstractMigration
               ->create();
               
               
-        $table = $this->table('permission_role', ['id'=>false, 'primary_key'=>'id']);
+        $table = $this->table('permission_role', ['id'=>false, 'primary_key'=>['permission_id','role_id']]);
         
-        $table->addColumn('id',            'biginteger', ['identity' => true, 'signed' => false])
-              ->addColumn('permission_id', 'biginteger', ['signed' => false])
+        $table->addColumn('permission_id', 'biginteger', ['signed' => false])
               ->addColumn('role_id',       'biginteger', ['signed' => false])
               ->addColumn('created_at',    'datetime',   ['default' => 'CURRENT_TIMESTAMP'])
               ->addColumn('updated_at',    'datetime',   ['null' => true])

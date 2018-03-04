@@ -44,10 +44,9 @@ class CreateIngredientsTables extends AbstractMigration
               ->create();
               
               
-        $table = $this->table('recipe_ingredient', ['id'=>false, 'primary_key'=>'id']);
+        $table = $this->table('recipe_ingredient', ['id'=>false, 'primary_key'=>['recipe_id','ingredient_id']]);
         
-        $table->addColumn('id',            'biginteger', ['identity' => true, 'signed' => false])
-              ->addColumn('recipe_id',     'biginteger', ['signed' => false])
+        $table->addColumn('recipe_id',     'biginteger', ['signed' => false])
               ->addColumn('ingredient_id', 'biginteger', ['signed' => false])
               ->addColumn('quantity',      'integer')
               ->addColumn('unit',          'string')

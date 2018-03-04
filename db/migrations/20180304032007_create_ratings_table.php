@@ -33,14 +33,17 @@ class CreateRatingsTable extends AbstractMigration
         $table->addColumn('user_id',    'biginteger', ['signed' => false])
               ->addColumn('recipe_id',  'biginteger', ['signed' => false])
               //->addColumn('rating', 'stars', ['values' => ['1', '2', '3', '4', '5']]) //Nicer, but for MySQL Only
-              ->addColumn('created_at', 'timestamp',  ['default' => 'CURRENT_TIMESTAMP'])
               
-              ->addForeignKey('user_id', 'users', 'id', ['delete'=>'RESTRICT'])
+              ->addColumn('created_at', 'timestamp',  ['default' => 'CURRENT_TIMESTAMP'])
+              // Ratings cannot be overwritten by design, so we won't have updated & deleted Timestamps
+               
+              ->addForeignKey('user_id',   'users',   'id', ['delete'=>'RESTRICT'])
+              ->addForeignKey('recipe_id', 'recipes', 'id', ['delete'=>'RESTRICT'])
               ->create();
               
         /**
          * WARNING: This is specific to PostgreSQL
-         * @todo Fix Phinx adapter and send pull request
+         * @todo Fix Phinx adapter and send pull request, so we can use the syntax above
          **/
         $this->getAdapter()->execute("CREATE TYPE stars AS ENUM ('1', '2', '3', '4', '5');");
         $this->getAdapter()->execute("ALTER TABLE ratings ADD COLUMN rating stars;");

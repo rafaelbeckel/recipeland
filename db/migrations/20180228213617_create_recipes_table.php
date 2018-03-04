@@ -30,15 +30,16 @@ class CreateRecipesTable extends AbstractMigration
     {
         $table = $this->table('recipes', ['id'=>false, 'primary_key'=>'id']);
         
-        
-        
-        $table->addColumn('id',         'biginteger', ['identity' => true, 'signed' => false])
-              ->addColumn('created_by', 'biginteger', ['signed' => false])
-              ->addColumn('name',       'string')
-              ->addColumn('prep_time',  'integer')
-              ->addColumn('vegetarian', 'boolean',   ['default' => false])
-              ->addColumn('published',  'boolean',   ['default' => true])
-              ->addColumn('picture',    'string')
+        $table->addColumn('id',          'biginteger', ['identity' => true, 'signed' => false])
+              ->addColumn('created_by',  'biginteger', ['signed' => false])
+              ->addColumn('name',        'string')
+              ->addColumn('subtitle',    'string')
+              ->addColumn('description', 'text')
+              ->addColumn('prep_time',   'integer')
+              ->addColumn('total_time',  'integer')
+              ->addColumn('vegetarian',  'boolean',   ['default' => false])
+              ->addColumn('published',   'boolean',   ['default' => true])
+              ->addColumn('picture',     'string')
               //->addColumn('difficulty', 'skill_lvl', ['values' => ['1', '2', '3']]) // Nicer, but for MySQL Only
               ->addColumn('created_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
               ->addColumn('updated_at', 'timestamp', ['null' => true])
@@ -50,7 +51,7 @@ class CreateRecipesTable extends AbstractMigration
               
         /**
          * WARNING: This is specific to PostgreSQL
-         * @todo Fix Phinx adapter and send pull request
+         * @todo Fix Phinx adapter and send pull request, so we can use the syntax above
          **/
         $this->getAdapter()->execute("CREATE TYPE skill_lvl AS ENUM ('1', '2', '3');");
         $this->getAdapter()->execute("ALTER TABLE recipes ADD COLUMN difficulty skill_lvl;");
