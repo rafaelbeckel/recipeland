@@ -30,11 +30,7 @@ class CreateRecipesTable extends AbstractMigration
     {
         $table = $this->table('recipes', ['id'=>false, 'primary_key'=>'id']);
         
-        /**
-         * WARNING: This is specific to PostgreSQL
-         * @todo Fix Phinx adapter and send pull request
-         **/
-        $this->getAdapter()->execute("CREATE TYPE skill_lvl AS ENUM ('1', '2', '3');");
+        
         
         $table->addColumn('id',         'biginteger', ['identity' => true, 'signed' => false])
               ->addColumn('created_by', 'biginteger', ['signed' => false])
@@ -43,7 +39,7 @@ class CreateRecipesTable extends AbstractMigration
               ->addColumn('vegetarian', 'boolean',   ['default' => false])
               ->addColumn('published',  'boolean',   ['default' => true])
               ->addColumn('picture',    'string')
-              //->addColumn('difficulty', 'skill_lvl', ['values' => ['1', '2', '3']]) //Nicer, but for MySQL Only
+              //->addColumn('difficulty', 'skill_lvl', ['values' => ['1', '2', '3']]) // Nicer, but for MySQL Only
               ->addColumn('created_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
               ->addColumn('updated_at', 'timestamp', ['null' => true])
               ->addColumn('deleted_at', 'timestamp', ['null' => true])
@@ -55,8 +51,9 @@ class CreateRecipesTable extends AbstractMigration
         /**
          * WARNING: This is specific to PostgreSQL
          * @todo Fix Phinx adapter and send pull request
-         **/ 
-        $table->getAdapter()->execute("ALTER TABLE recipes ADD COLUMN difficulty skill_lvl;");
+         **/
+        $this->getAdapter()->execute("CREATE TYPE skill_lvl AS ENUM ('1', '2', '3');");
+        $this->getAdapter()->execute("ALTER TABLE recipes ADD COLUMN difficulty skill_lvl;");
     }
     
     /**
