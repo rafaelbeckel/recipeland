@@ -18,26 +18,20 @@ abstract class Stack implements StackInterface, HandlerInterface
         if ($items) {
             $this->items = $items;
         }
-        
-        foreach ($this->items as $key => $item) {
-            $this->items[$key] = $this->getInstanceOf($item);
-        }
     }
     
     public function getAll(): array
     {
-        return self::items;
+        return $this->items;
     }
     
     public function append($item)
     {
-        $object = $this->getInstanceOf($item);
         array_push($this->items, $item);
     }
     
     public function prepend($item)
     {
-        $object = $this->getInstanceOf($item);
         array_unshift($this->items, $item);
     }
     
@@ -56,6 +50,11 @@ abstract class Stack implements StackInterface, HandlerInterface
         reset($this->items);
     }
     
+    public function movePointerToLastItem()
+    {
+        end($this->items);
+    }
+    
     public function getCurrentItem()
     {
         return current($this->items);
@@ -64,6 +63,11 @@ abstract class Stack implements StackInterface, HandlerInterface
     public function movePointerToNextItem()
     {
         next($this->items);
+    }
+    
+    public function movePointerToPreviousItem()
+    {
+        prev($this->items);
     }
     
     public function handle(RequestInterface $request): ResponseInterface

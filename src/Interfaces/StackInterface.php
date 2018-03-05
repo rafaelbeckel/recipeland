@@ -16,7 +16,11 @@ interface StackInterface
     
     public function resetPointerToFirstItem();
     
+    public function movePointerToLastItem();
+    
     public function getCurrentItem();
     
     public function movePointerToNextItem();
+    
+    public function movePointerToPreviousItem();
 }
