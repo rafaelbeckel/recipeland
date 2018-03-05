@@ -39,8 +39,8 @@ class CreateAclTables extends AbstractMigration
               
               ->addIndex('name', ['unique' => true])
               ->create();
-              
-        
+            
+            
         $table = $this->table('role_user', ['id'=>false, 'primary_key'=>['user_id','role_id']]);
         
         $table->addColumn('user_id',      'biginteger', ['signed' => false])
@@ -51,8 +51,8 @@ class CreateAclTables extends AbstractMigration
               ->addForeignKey('user_id', 'users', 'id', ['delete'=>'CASCADE'])
               ->addForeignKey('role_id', 'roles', 'id', ['delete'=>'CASCADE'])
               ->create();
-        
-        
+            
+            
         $table = $this->table('permissions', ['id'=>false, 'primary_key'=>'id']);
         
         $table->addColumn('id',           'biginteger', ['identity' => true, 'signed' => false])

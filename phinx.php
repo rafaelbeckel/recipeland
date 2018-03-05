@@ -12,7 +12,6 @@ return [
     'environments' => [
         'default_migration_table' => 'migrations',
         'default_database' => getenv('ENVIRONMENT'),
-        'environment' => getenv('ENVIRONMENT'),
         
         getenv('ENVIRONMENT') => [
             'adapter' => 'pgsql',
