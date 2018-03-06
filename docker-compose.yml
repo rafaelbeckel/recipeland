@@ -4,7 +4,8 @@ services:
 
     nginx:
         image: nginx:latest
-        restart: unless-stopped
+        container_name: recipeland_nginx
+        restart: on-failure
         ports:
             - "80:80"
             - "443:443"
@@ -15,30 +16,31 @@ services:
             - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
 
     php:
-        image: php:7.1.14-fpm
-        restart: unless-stopped
+        image: rafaelbeckel/php-72-fpm-pdo-pgsql
+        restart: on-failure
         container_name: recipeland_php # Name used to run phpunit via ./recipe taste
         command: >
             bash -c "./vendor/bin/phinx migrate && 
                      ./vendor/bin/phinx seed:run"
         volumes:
             - ./:/var/www/html
-        links:
-            - postgres
-            - redis
         depends_on:
             - composer
+            - postgres
+            - redis
 
     composer:
         image: composer:1.6.3
-        restart: 'no'
+        container_name: recipeland_composer
+        restart: on-failure
         command: install
         volumes:
             - .:/app
 
     postgres:
         image: postgres:9.6.7-alpine
-        restart: unless-stopped
+        container_name: recipeland_postgres
+        restart: on-failure
         ports:
             - "5432:5432"
         environment:
@@ -49,6 +51,7 @@ services:
 
     redis:
         image: redislabs/redisearch:1.0.8
-        restart: unless-stopped
+        container_name: recipeland_redis
+        restart: on-failure
         ports:
             - "6379:6379"

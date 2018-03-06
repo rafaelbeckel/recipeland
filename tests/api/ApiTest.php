@@ -12,9 +12,11 @@ class ApiTest extends TestSuite
     public function setUp()
     {
         parent::setUp();
-        
-        $this->client = new Client();
-        $this->url = getenv('URL');
+                                    
+        $this->client = new Client(
+            ['verify' => false] //Ignores self-signed SSL
+        );
+        $this->url = getenv('TEST_URL');
         
         // TODO create Test DB
     }
