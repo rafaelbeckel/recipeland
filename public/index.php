@@ -14,6 +14,3 @@ require __DIR__ . '/../bootstrap/ErrorHandler.php';
  * Run the App 
  */
 require __DIR__ . '/../bootstrap/Run.php';
-
-
-//@TODO run background scripts after sending response to client
