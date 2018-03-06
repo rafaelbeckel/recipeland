@@ -160,7 +160,7 @@ boil() {
 taste() {
     echo "Let's test our application. Is the container running?"
     check_dependencies
-    if [ $(docker inspect -f '{{.State.Running}}' recipeland_php) = "true" ]
+    if [ $(docker inspect -f '{{.State.Running}}' recipeland_php) == "true" ]
     then
         echo "Running PHPUnit..."
         docker exec -it recipeland_php ./vendor/bin/phpunit
