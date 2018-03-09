@@ -16,5 +16,6 @@
     </testsuites>
     <php>
         <env name="ENVIRONMENT" value="testing"/>
+        <env name="DB_CONNECTION" value="pgtest"/>
     </php>
 </phpunit>
