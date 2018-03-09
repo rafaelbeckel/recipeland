@@ -1,7 +1,7 @@
-<?php
+<?php 
 
 return [
-    'pre' => [
+    'prepare' => [
         'grate',
         'layer',
         'level',
@@ -18,7 +18,26 @@ return [
         'cut',
         'dip',
     ],
-    'peri' => [
+    'prepared' => [
+        'grated',
+        'layered',
+        'leveled',
+        'pinched',
+        'poured',
+        'scrambled',
+        'sliced',
+        'spread',
+        'stired',
+        'added',
+        'blended',
+        'breaded',
+        'chopped',
+        'cut',
+        'dipped',
+    ],
+    
+    'cook' => [
+        'cook',
         'bake',
         'melt',
         'grill',
@@ -27,7 +46,18 @@ return [
         'broil',
         'fry',
     ],
-    'post' => [
+    'cooked' => [
+        'cooked',
+        'baked',
+        'melted',
+        'grilled',
+        'simmered',
+        'boiled',
+        'broiled',
+        'fried',
+    ],
+    
+    'serve' => [
         'serve',
         'taste',
         'eat',

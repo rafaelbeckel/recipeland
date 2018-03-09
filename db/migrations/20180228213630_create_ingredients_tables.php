@@ -34,7 +34,7 @@ class CreateIngredientsTables extends AbstractMigration
               ->addColumn('slug',       'string')
               ->addColumn('name',       'string')
               ->addColumn('picture',    'string')
-              ->addColumn('allergens',  'string')
+              ->addColumn('allergens',  'string',    ['null' => true])
               ->addColumn('created_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
               ->addColumn('updated_at', 'timestamp', ['null' => true])
               ->addColumn('deleted_at', 'timestamp', ['null' => true])
@@ -48,7 +48,7 @@ class CreateIngredientsTables extends AbstractMigration
         
         $table->addColumn('recipe_id',     'biginteger', ['signed' => false])
               ->addColumn('ingredient_id', 'biginteger', ['signed' => false])
-              ->addColumn('quantity',      'integer')
+              ->addColumn('quantity',      'string')
               ->addColumn('unit',          'string')
               ->addColumn('created_at', 'datetime', ['default' => 'CURRENT_TIMESTAMP'])
               ->addColumn('updated_at', 'datetime', ['null' => true])

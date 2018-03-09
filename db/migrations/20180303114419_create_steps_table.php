@@ -36,6 +36,8 @@ class CreateStepsTable extends AbstractMigration
               ->addColumn('created_at',  'timestamp',  ['default' => 'CURRENT_TIMESTAMP'])
               ->addColumn('updated_at',  'timestamp',  ['null' => true])
               ->addColumn('deleted_at',  'timestamp',  ['null' => true])
+              
+              ->addIndex('description', ['unique' => true])
               ->create();
               
               
