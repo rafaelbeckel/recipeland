@@ -43,11 +43,13 @@ services:
         restart: on-failure
         ports:
             - "5432:5432"
+        volumes:
+            - ./docker/postgres:/docker-entrypoint-initdb.d
         environment:
             LC_ALL: C.UTF-8
             POSTGRES_USER: hellofresh
             POSTGRES_PASSWORD: hellofresh
-            POSTGRES_DB: hellofresh
+            POSTGRES_MULTIPLE_DATABASES: hellofresh,hellofresh_test
 
     redis:
         image: redislabs/redisearch:1.0.8
