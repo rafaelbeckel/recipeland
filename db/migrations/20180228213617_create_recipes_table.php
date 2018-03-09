@@ -30,16 +30,16 @@ class CreateRecipesTable extends AbstractMigration
     {
         $table = $this->table('recipes', ['id'=>false, 'primary_key'=>'id']);
         
-        $table->addColumn('id',          'biginteger', ['identity' => true, 'signed' => false])
-              ->addColumn('created_by',  'biginteger', ['signed' => false])
-              ->addColumn('name',        'string')
-              ->addColumn('subtitle',    'string')
+        $table->addColumn('id', 'biginteger', ['identity' => true, 'signed' => false])
+              ->addColumn('created_by', 'biginteger', ['signed' => false])
+              ->addColumn('name', 'string')
+              ->addColumn('subtitle', 'string')
               ->addColumn('description', 'text')
-              ->addColumn('prep_time',   'integer')
-              ->addColumn('total_time',  'integer')
-              ->addColumn('vegetarian',  'boolean',   ['default' => false])
-              ->addColumn('published',   'boolean',   ['default' => true])
-              ->addColumn('picture',     'string')
+              ->addColumn('prep_time', 'integer')
+              ->addColumn('total_time', 'integer')
+              ->addColumn('vegetarian', 'boolean', ['default' => false])
+              ->addColumn('published', 'boolean', ['default' => true])
+              ->addColumn('picture', 'string')
               //->addColumn('difficulty', 'skill_lvl', ['values' => ['1', '2', '3']]) // Nicer, but for MySQL Only
               ->addColumn('created_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
               ->addColumn('updated_at', 'timestamp', ['null' => true])
@@ -61,7 +61,7 @@ class CreateRecipesTable extends AbstractMigration
      * We need the down() method, because Phinx can't handle
      * raw queries in the magic change() method, so we need
      * to manually undo our migration.
-     **/ 
+     **/
     public function down()
     {
         $this->dropTable('recipes');

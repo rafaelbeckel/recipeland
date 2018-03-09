@@ -1,4 +1,4 @@
-<?php declare(strict_types=1); 
+<?php declare(strict_types=1);
 
 namespace Recipeland\Data;
 
@@ -18,7 +18,7 @@ class Permission extends EntrustPermission
             $role = $role['id'];
         }
         
-        if (! $this->roles()->where('role_id',$role)->count()) {
+        if (! $this->roles()->where('role_id', $role)->count()) {
             $this->roles()->attach($role);
         }
     }

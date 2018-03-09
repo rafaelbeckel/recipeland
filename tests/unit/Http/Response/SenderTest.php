@@ -10,9 +10,12 @@ use \Exception;
 
 class SenderTest extends TestSuite
 {
+    /**
+     * @runInSeparateProcess
+     */
     public function test_send_method()
     {
-        echo "Sender: Testing the response renderer output";
+        echo "(running in background) Sender: Testing the response renderer output";
         
         $response = new Response(200, [], "lorem ipsum");
         $sender = new Sender($response);
@@ -30,5 +33,4 @@ class SenderTest extends TestSuite
         parent::tearDown();
         ob_end_flush();
     }
-    
 }

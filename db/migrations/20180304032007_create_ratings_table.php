@@ -30,14 +30,14 @@ class CreateRatingsTable extends AbstractMigration
     {
         $table = $this->table('ratings', ['id'=>false, 'primary_key'=>['recipe_id','user_id']]);
         
-        $table->addColumn('user_id',    'biginteger', ['signed' => false])
-              ->addColumn('recipe_id',  'biginteger', ['signed' => false])
+        $table->addColumn('user_id', 'biginteger', ['signed' => false])
+              ->addColumn('recipe_id', 'biginteger', ['signed' => false])
               //->addColumn('rating', 'stars', ['values' => ['1', '2', '3', '4', '5']]) //Nicer, but for MySQL Only
               
-              ->addColumn('created_at', 'timestamp',  ['default' => 'CURRENT_TIMESTAMP'])
+              ->addColumn('created_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
               // Ratings cannot be overwritten by design, so we won't have updated & deleted Timestamps
                
-              ->addForeignKey('user_id',   'users',   'id', ['delete'=>'RESTRICT'])
+              ->addForeignKey('user_id', 'users', 'id', ['delete'=>'RESTRICT'])
               ->addForeignKey('recipe_id', 'recipes', 'id', ['delete'=>'RESTRICT'])
               ->create();
               
@@ -53,7 +53,7 @@ class CreateRatingsTable extends AbstractMigration
      * We need the down() method, because Phinx can't handle
      * raw queries in the magic change() method, so we need
      * to manually undo our migration.
-     **/ 
+     **/
     public function down()
     {
         $this->dropTable('ratings');

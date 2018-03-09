@@ -18,7 +18,7 @@ class AppTest extends TestSuite
     {
         echo "App: go() method must return a PSR-7 Response object";
         
-        $request = new Request( 'GET', '/foo' );
+        $request = new Request('GET', '/foo');
         
         $controller = m::mock(Controller::class);
         
@@ -26,7 +26,7 @@ class AppTest extends TestSuite
         $router->shouldReceive('getControllerFor')
                ->with($request)->once()
                ->andReturn($controller);
-               
+        
         $stack = m::mock(StackInterface::class);
         $stack->shouldReceive('append')
               ->with($controller)->once()
@@ -39,7 +39,7 @@ class AppTest extends TestSuite
         $app = new App($router, $stack);
         
         $response = $app->go($request);
-
+        
         $this->assertInstanceOf(ResponseInterface::class, $response);
     }
 }

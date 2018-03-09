@@ -19,9 +19,7 @@ class StackTest extends TestSuite
         parent::setUp();
         
         $this->stack = new class extends Stack {
-            
             protected $items = ['foo', 'bar', 'baz'];
-            
         };
     }
     
@@ -125,9 +123,10 @@ class StackTest extends TestSuite
     {
         echo "Stack: test handle(request) calls Middleware and returns Response object";
         
-        $request = new Request('GET','/');
+        $request = new Request('GET', '/');
         $middleware = m::spy(MiddlewareInterface::class);
-        $stack = new class([$middleware]) extends Stack {};
+        $stack = new class([$middleware]) extends Stack {
+        };
         
         $response = $stack->handle($request);
         
@@ -137,7 +136,8 @@ class StackTest extends TestSuite
         $this->addToAssertionCount(1);
     }
     
-    public function test_last () {
+    public function test_last()
+    {
         // Just a spacer for my fancy custom output.
         $this->assertTrue(true);
     }
@@ -158,8 +158,4 @@ class StackTest extends TestSuite
         
     //     return $middleware->process($request, $this);
     // }
-    
-    
-    
-    
 }

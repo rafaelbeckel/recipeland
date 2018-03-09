@@ -30,17 +30,17 @@ class CreateUsersTable extends AbstractMigration
     {
         $table = $this->table('users', ['id'=>false, 'primary_key'=>'id']);
         
-        $table->addColumn('id',         'biginteger',  ['identity' => true, 'signed' => false])
-              ->addColumn('email',      'string')
-              ->addColumn('username',   'string')
-              ->addColumn('password',   'string')
-              ->addColumn('name',       'string')
-              ->addColumn('token',      'string',    ['null' => true])
+        $table->addColumn('id', 'biginteger', ['identity' => true, 'signed' => false])
+              ->addColumn('email', 'string')
+              ->addColumn('username', 'string')
+              ->addColumn('password', 'string')
+              ->addColumn('name', 'string')
+              ->addColumn('token', 'string', ['null' => true])
               ->addColumn('created_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
               ->addColumn('updated_at', 'timestamp', ['null' => true])
               ->addColumn('deleted_at', 'timestamp', ['null' => true])
               
-              ->addIndex(['username',   'email'],   ['unique' => true])
+              ->addIndex(['username',   'email'], ['unique' => true])
               ->create();
     }
 }

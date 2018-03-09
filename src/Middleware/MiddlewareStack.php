@@ -6,7 +6,11 @@ use Recipeland\Stack;
 
 class MiddlewareStack extends Stack
 {
+    /**
+     * Middleware list for ALL routes
+     */
     protected $items = [
-        \Recipeland\Middlewares\AuthMiddleware::class,
+        \Recipeland\Middlewares\HttpsOnly::class,
+        \Recipeland\Middlewares\AddSecurityHeaders::class,
     ];
 }

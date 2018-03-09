@@ -21,7 +21,7 @@ class User extends Model implements UserInterface, EquatableInterface
         EntrustUserTrait::restore as euRestore;
     }
     
-    public function restore(): void 
+    public function restore(): void
     {
         $this->sfRestore();
         Cache::tags($this->table)->flush();
@@ -29,7 +29,7 @@ class User extends Model implements UserInterface, EquatableInterface
     
     public function createPassword(string $password): void
     {
-        $this->password = password_hash($password , PASSWORD_BCRYPT);
+        $this->password = password_hash($password, PASSWORD_BCRYPT);
         $this->save();
     }
     
@@ -48,7 +48,7 @@ class User extends Model implements UserInterface, EquatableInterface
         $symfony_roles = ['ROLE_USER'];
         $recipeland_roles = $this->roles()->get();
         
-        foreach($recipeland_roles as $role) {
+        foreach ($recipeland_roles as $role) {
             $symfony_roles[] = 'ROLE_' . strtoupper($role);
         }
         
@@ -70,7 +70,7 @@ class User extends Model implements UserInterface, EquatableInterface
         return $this->username;
     }
     
-    public function eraseCredentials() 
+    public function eraseCredentials()
     {
         // Do nothing
     }
@@ -94,13 +94,13 @@ class User extends Model implements UserInterface, EquatableInterface
     
     public function firstName()
     {
-        $firstName = head( explode(' ', $this->name) );
+        $firstName = head(explode(' ', $this->name));
         return str_replace('_', ' ', $firstName);
     }
 
     public function lastName()
     {
-        $lastName = last( explode(' ', $this->name) );
+        $lastName = last(explode(' ', $this->name));
         return str_replace('_', ' ', $lastName);
     }
     
@@ -114,7 +114,7 @@ class User extends Model implements UserInterface, EquatableInterface
             $role = $role['id'];
         }
         
-        if (! $this->roles()->where('role_id',$role)->count()) {
+        if (! $this->roles()->where('role_id', $role)->count()) {
             $this->roles()->attach($role);
         }
     }

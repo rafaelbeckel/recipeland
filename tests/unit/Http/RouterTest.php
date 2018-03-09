@@ -14,15 +14,14 @@ use \TypeError;
 
 class RouterTest extends TestSuite
 {
-    
     public function test_Router_controller_and_action()
     {
         echo "Router: should return the right controller and action from a routes Array and a Request";
         
-        $request = new Request( 'GET', '/foo' );
-        $router = new Router([[ 'GET', '/foo', 'Bar@baz' ]]);
+        $request = new Request('GET', '/foo');
+        $router = new Router([['GET', '/foo', 'Bar@baz' ]]);
         
-        // Router will ask the factory to build the correct Controller 
+        // Router will ask the factory to build the correct Controller
         $factory = m::mock(ControllerFactory::class);
         $factory->shouldReceive('build')
                 ->with('Bar')->once()
@@ -37,7 +36,7 @@ class RouterTest extends TestSuite
         $controller->shouldHaveReceived('setArguments')->with([])->once();
         
         // Ugly workaround for Mockery BUG #785
-        $this->addToAssertionCount(3); 
+        $this->addToAssertionCount(3);
     }
     
     
@@ -45,10 +44,10 @@ class RouterTest extends TestSuite
     {
         echo "Router: should return the right controller and action, with arguments";
         
-        $request = new Request( 'GET', '/foo/1234/make/Coffee' );
-        $router = new Router([[ 'GET', '/foo/{id}/make/{name}', 'Bar@baz' ]]);
+        $request = new Request('GET', '/foo/1234/make/Coffee');
+        $router = new Router([['GET', '/foo/{id}/make/{name}', 'Bar@baz' ]]);
         
-        // Router will ask the factory to build the correct Controller 
+        // Router will ask the factory to build the correct Controller
         $factory = m::mock(ControllerFactory::class);
         $spyController = m::spy(Controller::class);
         $factory->shouldReceive('build')
@@ -72,14 +71,14 @@ class RouterTest extends TestSuite
     {
         echo "Router: should call Error controller @ not_found action for a non-existent route";
         
-        $request = new Request( 'GET', '/foooooooo' );
-        $router = new Router([[ 'GET', '/foo', 'Bar@baz' ]]);
+        $request = new Request('GET', '/foooooooo');
+        $router = new Router([['GET', '/foo', 'Bar@baz' ]]);
         
-        // Router will ask the factory to build the Error Controller 
+        // Router will ask the factory to build the Error Controller
         $factory = m::mock(ControllerFactory::class);
         $factory->shouldReceive('build')
                 ->with('Errors')->once()
-                ->andReturn(m::spy(Controller::class)); 
+                ->andReturn(m::spy(Controller::class));
                     
         // Let's call our router
         $router->setControllerFactory($factory);
@@ -98,14 +97,14 @@ class RouterTest extends TestSuite
     {
         echo "Router: should call Error controller @ not_found action for a route with incomplete name";
         
-        $request = new Request( 'GET', '/fo' );
-        $router = new Router([[ 'GET', '/foo', 'Bar@baz' ]]);
+        $request = new Request('GET', '/fo');
+        $router = new Router([['GET', '/foo', 'Bar@baz' ]]);
         
-        // Router will ask the factory to build the Error Controller 
+        // Router will ask the factory to build the Error Controller
         $factory = m::mock(ControllerFactory::class);
         $factory->shouldReceive('build')
                 ->with('Errors')->once()
-                ->andReturn(m::spy(Controller::class)); 
+                ->andReturn(m::spy(Controller::class));
                     
         // Let's call our router
         $router->setControllerFactory($factory);
@@ -124,10 +123,10 @@ class RouterTest extends TestSuite
     {
         echo "Router: should call Error controller @ method_not_allowed action for a wrong HTTP method call";
         
-        $request = new Request( 'POST', '/foo' );
-        $router = new Router([[ 'GET',  '/foo', 'Bar@baz' ]]);
+        $request = new Request('POST', '/foo');
+        $router = new Router([['GET',  '/foo', 'Bar@baz' ]]);
         
-        // Router will ask the factory to build the Error Controller 
+        // Router will ask the factory to build the Error Controller
         $factory = m::mock(ControllerFactory::class);
         $factory->shouldReceive('build')
                 ->with('Errors')->once()
@@ -144,5 +143,4 @@ class RouterTest extends TestSuite
         // Ugly workaround for Mockery BUG #785
         $this->addToAssertionCount(3);
     }
-    
 }

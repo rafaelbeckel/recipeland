@@ -27,10 +27,11 @@ trait CompositePrimaryKey
     protected function setKeysForSaveQuery(Builder $query)
     {
         foreach ($this->getKeyName() as $key) {
-            if (isset($this->$key))
+            if (isset($this->$key)) {
                 $query->where($key, '=', $this->$key);
-            else
+            } else {
                 throw new Exception(__METHOD__ . 'Missing part of the primary key: ' . $key);
+            }
         }
         return $query;
     }

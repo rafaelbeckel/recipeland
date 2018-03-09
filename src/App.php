@@ -29,9 +29,14 @@ class App
     public function go(RequestInterface $request): ResponseInterface
     {
         $controller = $this->router->getControllerFor($request);
-        $this->stack->append($controller);
-        $response = $this->processStack($request);
         
+        foreach ($controller->getMiddleware() as $controllerMiddleware) {
+            $this->stack->append($controllerMiddleware);
+        }
+        
+        $this->stack->append($controller);
+        
+        $response = $this->processStack($request);
         return $response;
     }
     

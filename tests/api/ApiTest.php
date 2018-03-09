@@ -2,8 +2,13 @@
 
 namespace Tests\Api;
 
-use GuzzleHttp\Client;
 use Tests\TestSuite;
+use GuzzleHttp\Client;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\Exception\RequestException;
 
 class ApiTest extends TestSuite
 {
@@ -12,7 +17,7 @@ class ApiTest extends TestSuite
     public function setUp()
     {
         parent::setUp();
-                                    
+        
         $this->client = new Client(
             ['verify' => false] //Ignores self-signed SSL
         );
@@ -26,7 +31,7 @@ class ApiTest extends TestSuite
         echo "API test: GET /recipes and get a list of recipes";
         
         $response = $this->client->request('GET', $this->url.'/recipes');
-        $this->assertContains('Hi', (string) $response->getBody());
+        $this->assertContains('{', (string) $response->getBody());
         
         $this->markTestIncomplete('JSON API not implemented yet.');
     }
@@ -56,7 +61,7 @@ class ApiTest extends TestSuite
         echo "API test: GET /recipes/{id} and get the given recipe";
         
         $response = $this->client->request('GET', $this->url.'/recipes/1');
-        $this->assertContains('Hi', (string) $response->getBody());
+        $this->assertContains('{', (string) $response->getBody());
         
         $this->markTestIncomplete('JSON API not implemented yet.');
     }

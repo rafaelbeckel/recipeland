@@ -15,7 +15,4 @@ class RecipeCached extends CachedModel
 // you will, too.',
             
 //          }
-     
-     
-    
 }

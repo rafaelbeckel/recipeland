@@ -15,8 +15,10 @@ class RoutesArrayValidatorTest extends TestSuite
         
         $arguments = [
             "I am not an array!",
-            function() {},
-            new class {},
+            function () {
+            },
+            new class {
+            },
             12345.678,
             12345,
             true,

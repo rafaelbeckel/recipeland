@@ -1,4 +1,4 @@
-<?php declare(strict_types=1); 
+<?php declare(strict_types=1);
 
 namespace Recipeland\Data;
 
@@ -9,7 +9,7 @@ class Role extends EntrustRole
 {
     protected $fillable = ['name', 'display_name', 'description'];
     
-    public function permissions() 
+    public function permissions()
     {
         return $this->perms();
     }
@@ -25,7 +25,7 @@ class Role extends EntrustRole
         }
         
         
-        if (! $this->permissions()->where('permission_id',$permission)->count()) {
+        if (! $this->permissions()->where('permission_id', $permission)->count()) {
             $this->permissions()->attach($permission);
         }
     }

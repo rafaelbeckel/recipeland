@@ -21,9 +21,8 @@ $accessLog->pushHandler(new StreamHandler(__DIR__.'/../log/access.log', Logger::
 
 if (getenv('ENVIRONMENT') != 'production') {
     $err->pushHandler(new Whoops\Handler\PrettyPageHandler);
-    
 } else {
-    $err->pushHandler(function($e){
+    $err->pushHandler(function ($e) {
         /**
          * Generic error message for production environment
          */

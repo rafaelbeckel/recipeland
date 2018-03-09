@@ -30,12 +30,12 @@ class CreateAclTables extends AbstractMigration
     {
         $table = $this->table('roles', ['id'=>false, 'primary_key'=>'id']);
         
-        $table->addColumn('id',           'biginteger', ['identity' => true, 'signed' => false])
-              ->addColumn('name',         'string')
-              ->addColumn('display_name', 'string',     ['null' => true])
-              ->addColumn('description',  'string',     ['null' => true])
-              ->addColumn('created_at',   'timestamp',   ['default' => 'CURRENT_TIMESTAMP'])
-              ->addColumn('updated_at',   'timestamp',   ['null' => true])
+        $table->addColumn('id', 'biginteger', ['identity' => true, 'signed' => false])
+              ->addColumn('name', 'string')
+              ->addColumn('display_name', 'string', ['null' => true])
+              ->addColumn('description', 'string', ['null' => true])
+              ->addColumn('created_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
+              ->addColumn('updated_at', 'timestamp', ['null' => true])
               
               ->addIndex('name', ['unique' => true])
               ->create();
@@ -43,10 +43,10 @@ class CreateAclTables extends AbstractMigration
             
         $table = $this->table('role_user', ['id'=>false, 'primary_key'=>['user_id','role_id']]);
         
-        $table->addColumn('user_id',      'biginteger', ['signed' => false])
-              ->addColumn('role_id',      'biginteger', ['signed' => false])
-              ->addColumn('created_at',   'timestamp',   ['default' => 'CURRENT_TIMESTAMP'])
-              ->addColumn('updated_at',   'timestamp',   ['null' => true])
+        $table->addColumn('user_id', 'biginteger', ['signed' => false])
+              ->addColumn('role_id', 'biginteger', ['signed' => false])
+              ->addColumn('created_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
+              ->addColumn('updated_at', 'timestamp', ['null' => true])
               
               ->addForeignKey('user_id', 'users', 'id', ['delete'=>'CASCADE'])
               ->addForeignKey('role_id', 'roles', 'id', ['delete'=>'CASCADE'])
@@ -55,12 +55,12 @@ class CreateAclTables extends AbstractMigration
             
         $table = $this->table('permissions', ['id'=>false, 'primary_key'=>'id']);
         
-        $table->addColumn('id',           'biginteger', ['identity' => true, 'signed' => false])
-              ->addColumn('name',         'string')
-              ->addColumn('display_name', 'string',     ['null' => true])
-              ->addColumn('description',  'string',     ['null' => true])
-              ->addColumn('created_at',   'datetime',   ['default' => 'CURRENT_TIMESTAMP'])
-              ->addColumn('updated_at',   'datetime',   ['null' => true])
+        $table->addColumn('id', 'biginteger', ['identity' => true, 'signed' => false])
+              ->addColumn('name', 'string')
+              ->addColumn('display_name', 'string', ['null' => true])
+              ->addColumn('description', 'string', ['null' => true])
+              ->addColumn('created_at', 'datetime', ['default' => 'CURRENT_TIMESTAMP'])
+              ->addColumn('updated_at', 'datetime', ['null' => true])
               
               ->addIndex('name', ['unique' => true])
               ->create();
@@ -69,12 +69,12 @@ class CreateAclTables extends AbstractMigration
         $table = $this->table('permission_role', ['id'=>false, 'primary_key'=>['permission_id','role_id']]);
         
         $table->addColumn('permission_id', 'biginteger', ['signed' => false])
-              ->addColumn('role_id',       'biginteger', ['signed' => false])
-              ->addColumn('created_at',    'datetime',   ['default' => 'CURRENT_TIMESTAMP'])
-              ->addColumn('updated_at',    'datetime',   ['null' => true])
+              ->addColumn('role_id', 'biginteger', ['signed' => false])
+              ->addColumn('created_at', 'datetime', ['default' => 'CURRENT_TIMESTAMP'])
+              ->addColumn('updated_at', 'datetime', ['null' => true])
               
               ->addForeignKey('permission_id', 'permissions', 'id', ['delete'=>'CASCADE'])
-              ->addForeignKey('role_id',       'roles',       'id', ['delete'=>'CASCADE'])
+              ->addForeignKey('role_id', 'roles', 'id', ['delete'=>'CASCADE'])
               ->create();
     }
 }

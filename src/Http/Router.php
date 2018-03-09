@@ -78,7 +78,8 @@ class Router implements RouterInterface
     
     protected function dispatch(): array
     {
-        $path = $this->request->getRequestTarget();
+        $path = $this->request->getUri()->getPath();
+        
         $httpMethod = $this->request->getMethod();
         
         $dispatcher = $this->getDispatcher();

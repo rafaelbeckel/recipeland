@@ -14,9 +14,9 @@ class AddSecurityHeaders implements MiddlewareInterface
         $response = $next->handle($request);
         
         return $response->withHeader("Strict-Transport-Security", "\"max-age=31536000; includeSubDomains; preload\"")
-                        ->withHeader("Content-Security-Policy",   "\"default-src 'self';\""                         )
-                        ->withHeader("X-XSS-Protection",          "\"1; mode=block\""                               )
-                        ->withHeader("X-Frame-Options",           "\"DENY\""                                        )
-                        ->withHeader("X-Content-Type-Options",    "nosniff"                                         );
+                        ->withHeader("Content-Security-Policy", "\"default-src 'self';\"")
+                        ->withHeader("X-XSS-Protection", "\"1; mode=block\"")
+                        ->withHeader("X-Frame-Options", "\"DENY\"")
+                        ->withHeader("X-Content-Type-Options", "nosniff");
     }
 }

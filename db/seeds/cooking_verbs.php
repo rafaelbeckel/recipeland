@@ -56,10 +56,4 @@ return [
         'broiled',
         'fried',
     ],
-    
-    'serve' => [
-        'serve',
-        'taste',
-        'eat',
-    ]
 ];
