@@ -4,9 +4,7 @@ namespace Recipeland\Data;
 
 use Illuminate\Database\Eloquent\Model;
 
-class RecipeRating extends Model
+class Rating extends Model
 {
     public $timestamps = false;
-    
-    protected $table = 'ratings';
 }

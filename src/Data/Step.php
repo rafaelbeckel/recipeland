@@ -4,14 +4,13 @@ namespace Recipeland\Data;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Ingredient extends Model
+class Step extends Model
 {
-    protected $fillable = ['slug', 'name', 'picture', 'allergens'];
+    protected $fillable = ['description', 'picture'];
     
     public function recipes()
     {
         return $this->belongsToMany('Recipeland\Data\Recipe', 'recipe_ingredient')
-                    ->withPivot('quantity', 'unit')
-                    ->as('details');
+                    ->withPivot('order')->as('details');
     }
 }

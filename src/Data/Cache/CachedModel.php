@@ -7,4 +7,5 @@ use psr\Cache\CacheItemInterface;
 
 abstract class CachedModel
 {
+    //
 }
