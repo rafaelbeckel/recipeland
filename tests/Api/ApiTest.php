@@ -30,8 +30,8 @@ class ApiTest extends TestSuite
     {
         echo "API test: GET /recipes and get a list of recipes";
         
-        $response = $this->client->request('GET', $this->url.'/recipes');
-        $this->assertContains('{', (string) $response->getBody());
+        //$response = $this->client->request('GET', $this->url.'/recipes');
+        //$this->assertContains('{', (string) $response->getBody());
         
         $this->markTestIncomplete('JSON API not implemented yet.');
     }
@@ -40,8 +40,8 @@ class ApiTest extends TestSuite
     {
         echo "API test: POST /recipes and create a new recipe";
         
-        $response = $this->client->request('POST', $this->url.'/recipes');
-        $this->assertContains('Hi', (string) $response->getBody());
+        //$response = $this->client->request('POST', $this->url.'/recipes');
+        //$this->assertContains('Hi', (string) $response->getBody());
         
         $this->markTestIncomplete('JSON API not implemented yet.');
     }
@@ -50,8 +50,8 @@ class ApiTest extends TestSuite
     {
         echo "API test: POST /recipes and create multiple recipes";
         
-        $response = $this->client->request('POST', $this->url.'/recipes');
-        $this->assertContains('Hi', (string) $response->getBody());
+        //$response = $this->client->request('POST', $this->url.'/recipes');
+        //$this->assertContains('Hi', (string) $response->getBody());
         
         $this->markTestIncomplete('JSON API not implemented yet.');
     }
@@ -60,8 +60,8 @@ class ApiTest extends TestSuite
     {
         echo "API test: GET /recipes/{id} and get the given recipe";
         
-        $response = $this->client->request('GET', $this->url.'/recipes/1');
-        $this->assertContains('{', (string) $response->getBody());
+        //$response = $this->client->request('GET', $this->url.'/recipes/1');
+        //$this->assertContains('{', (string) $response->getBody());
         
         $this->markTestIncomplete('JSON API not implemented yet.');
     }
@@ -70,8 +70,8 @@ class ApiTest extends TestSuite
     {
         echo "API test: PUT /recipes/{id} and edit the given recipe";
         
-        $response = $this->client->request('PUT', $this->url.'/recipes/1');
-        $this->assertContains('Hi', (string) $response->getBody());
+        //$response = $this->client->request('PUT', $this->url.'/recipes/1');
+        //$this->assertContains('Hi', (string) $response->getBody());
         
         $this->markTestIncomplete('JSON API not implemented yet.');
     }
@@ -80,8 +80,8 @@ class ApiTest extends TestSuite
     {
         echo "API test: PATCH /recipes/{id} and edit part of the given recipe";
         
-        $response = $this->client->request('PUT', $this->url.'/recipes/1');
-        $this->assertContains('Hi', (string) $response->getBody());
+        //$response = $this->client->request('PUT', $this->url.'/recipes/1');
+        //$this->assertContains('Hi', (string) $response->getBody());
         
         $this->markTestIncomplete('JSON API not implemented yet.');
     }
@@ -90,8 +90,8 @@ class ApiTest extends TestSuite
     {
         echo "API test: DELETE /recipes/{id} and remove the given recipe";
         
-        $response = $this->client->request('DELETE', $this->url.'/recipes/1');
-        $this->assertContains('Hi', (string) $response->getBody());
+        //$response = $this->client->request('DELETE', $this->url.'/recipes/1');
+        //$this->assertContains('Hi', (string) $response->getBody());
         
         $this->markTestIncomplete('JSON API not implemented yet.');
     }
@@ -100,8 +100,8 @@ class ApiTest extends TestSuite
     {
         echo "API test: POST /recipes/{id}/rating and evaluate the given recipe";
         
-        $response = $this->client->request('POST', $this->url.'/recipes/1/rating');
-        $this->assertContains('Hi', (string) $response->getBody());
+        //$response = $this->client->request('POST', $this->url.'/recipes/1/rating');
+        //$this->assertContains('Hi', (string) $response->getBody());
         
         $this->markTestIncomplete('JSON API not implemented yet.');
     }

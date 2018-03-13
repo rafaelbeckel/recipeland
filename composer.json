@@ -39,7 +39,8 @@
     "require-dev": {
         "phpunit/phpunit": "dev-issue-3031_fix_based_on_7.0.2",
         "mockery/mockery": "dev-master",
-        "friendsofphp/php-cs-fixer": "^2.10"
+        "friendsofphp/php-cs-fixer": "^2.10",
+        "vicebas/php-docblock-generator": "^1.0"
     },
     "repositories": [
         {
@@ -58,7 +59,12 @@
         }
     },
     "scripts" : {
-        "test" : "./vendor/bin/phpunit"
+        "fix" : "./vendor/bin/php-cs-fixer fix . --rules='{\"@Symfony\":true, \"@PSR2\":true, \"yoda_style\":false, \"braces\":{\"allow_single_line_closure\":true}}'",
+        "test" : "./vendor/bin/phpunit",
+        "migrate" : "./vendor/bin/phinx migrate",
+        "rollback" : "./vendor/bin/phinx rollback",
+        "reset" : "./vendor/bin/phinx rollback -t 0",
+        "seed" : "./vendor/bin/phinx seed:run"
     }
     
 }

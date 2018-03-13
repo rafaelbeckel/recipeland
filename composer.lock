@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "004c1081266557afcee455cae6b3260a",
+    "content-hash": "ff057b4d5eee5d78ec2d2c78c3ded71d",
     "packages": [
         {
             "name": "cheprasov/php-redis-client",
@@ -4732,6 +4732,33 @@
             ],
             "description": "A small library for converting tokenized PHP source code into XML and potentially other formats",
             "time": "2017-04-07T12:08:54+00:00"
+        },
+        {
+            "name": "vicebas/php-docblock-generator",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/vicebas/PHP-Docblock-Generator.git",
+                "reference": "8ecb3f5a421f5b3bb93e51417db925f35bcc796d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/vicebas/PHP-Docblock-Generator/zipball/8ecb3f5a421f5b3bb93e51417db925f35bcc796d",
+                "reference": "8ecb3f5a421f5b3bb93e51417db925f35bcc796d",
+                "shasum": ""
+            },
+            "bin": [
+                "bin/docblock"
+            ],
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "DocBlockGenerator\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "description": "Generate PHPDoc Blocks in files and Folders",
+            "time": "2016-05-09T11:46:13+00:00"
         },
         {
             "name": "webmozart/assert",
