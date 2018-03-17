@@ -28,14 +28,14 @@ class HttpsOnly implements MiddlewareInterface
 
     protected function detectScheme(RequestInterface $request)
     {
-        if ($request->getHeader('x-forwarded-proto')[0] == 'https' ||
-            $request->getHeader('x-forwarded-protocol')[0] == 'https' ||
-            $request->getHeader('front-end-https')[0] == 'on' ||
-            $request->getHeader('front-end-https')[0] == '1' ||
-            $request->getHeader('x-url-scheme')[0] == 'on' ||
-            $request->getHeader('x-url-scheme')[0] == '1' ||
-            $request->getHeader('x-forwarded-ssl')[0] == 'on' ||
-            $request->getHeader('x-forwarded-ssl')[0] == '1' ||
+        if ($request->getHeader('x-forwarded-proto') == ['https'] ||
+            $request->getHeader('x-forwarded-protocol') == ['https'] ||
+            $request->getHeader('front-end-https') == ['on'] ||
+            $request->getHeader('front-end-https') == ['1'] ||
+            $request->getHeader('x-url-scheme') == ['on'] ||
+            $request->getHeader('x-url-scheme') == ['1'] ||
+            $request->getHeader('x-forwarded-ssl') == ['on'] ||
+            $request->getHeader('x-forwarded-ssl') == ['1'] ||
             $request->getUri()->getScheme() == 'https') {
             return 'https';
         } else {

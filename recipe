@@ -17,27 +17,27 @@ show_help() {
     echo ""
     echo "      ${b}Commands:"
     echo ""
-    echo "        ${b} help ${n}"
+    echo "        ${b} help ${n} ( help | -h | --help | '' )"
     echo "         Shows this message."
     echo ""
-    echo "        ${b} prepare ${n}"
+    echo "        ${b} prepare ${n} ( prepare | config | setup )"
     echo "         Generates .env file and"
     echo "         configure server's domain name."
     echo ""
-    echo "        ${b} cook ${n}"
+    echo "        ${b} cook ${n} ( cook | run | start )"
     echo "         Run all docker containers in daemon mode"
     echo "         and installs all necessary packages using composer."
     echo "         API will be ready to be consumed in the configured domain name."
     echo "         If there's no .env file present, we will automatically create one."
     echo ""
-    echo "        ${b} boil ${n}"
+    echo "        ${b} boil ${n} ( boil | verbose | -v | --verbose | debug )"
     echo "         Same as cook, but in verbose mode"
     echo ""
-    echo "        ${b} taste ${n}"
+    echo "        ${b} taste ${n} ( taste | test )"
     echo "         Run all unit tests."
     echo "         It needs a running container to work."
     echo ""
-    echo "        ${b} finish ${n}"
+    echo "        ${b} finish ${n} ( finish | stop | quit | exit )"
     echo "         Stop all docker containers"
     echo ""
     exit 0
@@ -116,6 +116,8 @@ prepare() {
             echo "Let's continue our work..."
             echo ""
         fi
+    else
+        echo ".env file is present!"
     fi
 
     echo "Configuring web server's domain name..."
@@ -123,7 +125,7 @@ prepare() {
     sed -i "s/server_name.*/server_name ${DOMAIN} nginx;/" ./docker/nginx/default.conf
     sed -i "s/return 301.*/return 301 https:\/\/${DOMAIN}\$request_uri;/" ./docker/nginx/default.conf
 
-    echo "Domain name set to ${b}$DOMAIN${n}"
+    echo "Domain name set to ${b}$DOMAIN${n} in you server config file"
 
     echo ""
     echo "All set! We are ready to cook!"
@@ -155,9 +157,21 @@ cook() {
             finish
         else
             docker-compose up -d
-            echo "Run ${b}'$ ./recipe finish'${n} to stop all containers."
+            echo ""
+            echo "All containers started!"
+            echo ""
+            echo "Run ${b}'$ ./recipe finish'${n} to stop the containers."
             echo "Run ${b}'$ ./recipe taste'${n} to run all unit tests and api test."
             echo "Run ${b}'$ ./recipe boil'${n} to debug the containers if anything goes wrong."
+            echo ""
+            echo "Visit ${b}https://$DOMAIN/recipes${n} to see our generated masterpieces!"
+            echo ""
+            echo "We use a self-signed SSL certificate, and it won't be accepted on most clients."
+            echo "You need to tell your browser or API client to accept it. Look at README for instructions."
+            echo ""
+            echo "If you get a 504 Error from nginx, just reload the page a few times until the service starts."
+            echo "Migrations can take a while. PHP-FPM won't start listening until they are all finished." 
+            echo "You can make startup faster by reducing the number of generated recipes in .env file."
         fi
 
     fi
