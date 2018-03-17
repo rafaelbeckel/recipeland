@@ -119,9 +119,10 @@ prepare() {
     fi
 
     echo "Configuring web server's domain name..."
-    DOMAIN=$(readvar DOMAIN .env)
-    sed -i "s/server_name.*/server_name ${DOMAIN}/" ./docker/nginx/default.conf
-    
+    DOMAIN=$(read_var DOMAIN .env)
+    sed -i "s/server_name.*/server_name ${DOMAIN} nginx;/" ./docker/nginx/default.conf
+    sed -i "s/return 301.*/return 301 https:\/\/${DOMAIN}\$request_uri;/" ./docker/nginx/default.conf
+
     echo "Domain name set to ${b}$DOMAIN${n}"
 
     echo ""
@@ -135,19 +136,30 @@ cook() {
         prepare
     fi
 
-    DOMAIN=$(read_var DOMAIN .env)
-    echo "The API will start listening at ${b}https://$DOMAIN${n}"
-
     check_dependencies
 
-    if [ "$1" == "verbose" ]
+    if [[ $(docker inspect -f '{{.State.Running}}' recipeland_php) == "true" ]]
     then
-        echo "Press ${b}Ctrl+C${n} to exit."
-        docker-compose up
-        finish
+        echo "${b}Containers are already running!${n}"
+        echo "You can stop them with ${b}'$ ./recipe finish'${n}."
+
     else
-        docker-compose up -d
-        echo "Run ${b}'./recipe finish'${n} to stop."
+
+        DOMAIN=$(read_var DOMAIN .env)
+        echo "The API will start listening at ${b}https://$DOMAIN${n}"
+
+        if [ "$1" == "verbose" ]
+        then
+            echo "Press ${b}Ctrl+C${n} to exit."
+            docker-compose up
+            finish
+        else
+            docker-compose up -d
+            echo "Run ${b}'$ ./recipe finish'${n} to stop all containers."
+            echo "Run ${b}'$ ./recipe taste'${n} to run all unit tests and api test."
+            echo "Run ${b}'$ ./recipe boil'${n} to debug the containers if anything goes wrong."
+        fi
+
     fi
 
     echo ""
@@ -165,7 +177,7 @@ taste() {
         echo "Running PHPUnit..."
         docker exec -it recipeland_php ./vendor/bin/phpunit
     else
-        echo "Container is not running! Start the application with ./recipe cook first."
+        echo "Container is not running! Start the application with ${b}'$ ./recipe cook'${n} first."
     fi
     echo ""
 }
@@ -174,23 +186,30 @@ finish() {
     check_dependencies
     docker-compose down
     echo ""
-    echo "${b}You finished cooking. Delicious!${n}"
+    echo "${b}You finished cooking!${n}"
     echo ""
 }
 
 case $1 in
-    "help")
-        show_help ;;
-    "prepare")
-        prepare ;;
-    "cook")
-        cook ;;
-    "boil")
-        boil ;;
-    "taste")
-        taste ;;
-    "finish")
-        finish ;;
+    "help" | "-h" | "--help")
+        show_help 
+        ;;
+    "prepare" | "config" | "setup")
+        prepare 
+        ;;
+    "cook" | "run" | "start")
+        cook 
+        ;;
+    "boil" | "verbose" | "-v" | "--verbose" | "debug")
+        boil 
+        ;;
+    "taste" | "test")
+        taste 
+        ;;
+    "finish" | "stop" | "quit" | "exit")
+        finish 
+        ;;
     *)
-        show_help ;;
+        show_help 
+        ;;
 esac
