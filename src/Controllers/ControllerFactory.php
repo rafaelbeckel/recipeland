@@ -1,20 +1,26 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Recipeland\Controllers;
 
-use Recipeland\Interfaces\FactoryInterface;
-use \RuntimeException;
+use Recipeland\Helpers\Factory;
 
-class ControllerFactory implements FactoryInterface
+class ControllerFactory extends Factory
 {
-    public function build(string $className)
+    protected $namespace = __NAMESPACE__;
+
+    public function build(string $className, ...$arguments)
     {
-        $class = __namespace__.'\\'.$className;
-        
-        if (class_exists($class)) {
-            return new $class;
+        $class = $this->getNamespace().$className;
+
+        if ($this->container && class_exists($class)) {
+            return $this->container->make($class, [
+                'action' => $arguments[0],
+                'arguments' => $arguments[1] ?? [],
+            ]);
         } else {
-            throw new RuntimeException('Class not Found');
+            throw new RuntimeException('Class '.$class.' not Found');
         }
     }
 }

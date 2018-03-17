@@ -1,54 +1,51 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Recipeland\Http\Response;
 
 use Psr\Http\Message\ResponseInterface;
+use Recipeland\Interfaces\SenderInterface;
 
-class Sender
+class Sender implements SenderInterface
 {
     protected $response;
-    
-    public function __construct(ResponseInterface $response)
+
+    public function send(ResponseInterface $response): void
     {
         $this->response = $response;
-    }
-    
-    public function send(): void
-    {
+
         $this->sendHeaders();
         $this->sendContent();
         $this->clearBuffers();
     }
-    
+
     protected function sendHeaders(): void
     {
-        $r = $this->response;
-        $h = $r->getHeaders();
-        
-        $version = $r->getProtocolVersion();
-        $status  = $r->getStatusCode();
-        $reason  = $r->getReasonPhrase();
-        ;
+        $response = $this->response;
+        $headers = $response->getHeaders();
+        $version = $response->getProtocolVersion();
+        $status = $response->getStatusCode();
+        $reason = $response->getReasonPhrase();
+
         $httpString = sprintf('HTTP/%s %s %s', $version, $status, $reason);
-        
-        if (! headers_sent()) {
-            // custom headers
-            foreach ($h as $key => $values) {
-                foreach ($values as $value) {
-                    header($key.': '.$value, false);
-                }
+
+        // custom headers
+        foreach ($headers as $key => $values) {
+            foreach ($values as $value) {
+                header($key.': '.$value, false);
             }
-        
-            // status
-            header($httpString, true, $status);
         }
+
+        // status
+        header($httpString, true, $status);
     }
-    
+
     protected function sendContent()
     {
         echo (string) $this->response->getBody();
     }
-    
+
     protected function clearBuffers()
     {
         if (function_exists('fastcgi_finish_request')) {
@@ -57,7 +54,7 @@ class Sender
             $this->closeOutputBuffers();
         }
     }
-    
+
     private function closeOutputBuffers()
     {
         if (ob_get_level()) {

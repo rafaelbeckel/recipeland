@@ -1,14 +1,16 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Recipeland\Controllers;
 
-use \BadMethodCallException;
+use BadMethodCallException;
 use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Server\MiddlewareInterface;
 use Recipeland\Interfaces\ControllerInterface;
 use Psr\Http\Message\ServerRequestInterface as RequestInterface;
 use Psr\Http\Server\RequestHandlerInterface as HandlerInterface;
-use Psr\Http\Server\MiddlewareInterface;
 
 /**
  * A Controller in Recipeland is a special kind of middleware,
@@ -17,88 +19,89 @@ use Psr\Http\Server\MiddlewareInterface;
  * Instead of doing the traditional __call black magic hackery,
  * it implements the default handler interface from PSR-7 and
  * additionally provides a set of useful specific methods.
- *
- * In our current implementation, the controller is first instantiated
- * by the Router, who calls the setAction() method to store the name
- * of the method to be called. Then, the controller is injected in the
- * end of the Middleware Stack, and the process() method will call
- * the actual action method.
  */
-abstract class Controller implements MiddlewareInterface, ControllerInterface
+abstract class AbstractController implements ControllerInterface, MiddlewareInterface
 {
-    protected $request;
+    protected $action;
     protected $response;
-    
-    protected $action = 'defaultAction';
     protected $arguments = [];
-    
-    public function __construct(ResponseInterface $response = null)
-    {
-        if ($response) {
-            $this->response = $response;
-        } else {
-            $this->response = new Response;
-        }
+    protected $middleware = [];
+    protected $queryParams = [];
+
+    final public function __construct(
+        string $action,
+        array $arguments = []
+    ) {
+        $this->action = $action;
+        $this->arguments = $arguments;
+        $this->response = new Response();
     }
-    
+
     public function __call($method, $parameters)
     {
         throw new BadMethodCallException("Method [$method] does not exist.");
     }
-    
-    public function defaultAction(): void
+
+    public function getMiddleware(): array
     {
-        // do nothing
+        return $this->middleware;
     }
-    
-    public function setAction(string $action): void
-    {
-        $this->action = $action;
-    }
-    
+
     public function getAction(): string
     {
         return $this->action;
     }
-    
-    public function setArguments(array $arguments): void
-    {
-        $this->arguments = $arguments;
-    }
-    
-    public function getArguments(): string
+
+    public function getArguments(): array
     {
         return $this->arguments;
     }
-    
+
+    public function setQueryParams(array $params): void
+    {
+        $this->queryParams = $params;
+    }
+
+    public function getQueryParam(string $key, $default = '')
+    {
+        $param = null;
+
+        return $this->queryParams[$key] ?? $default;
+    }
+
     public function setStatus(int $code): void
     {
         $this->response = $this->response->withStatus($code);
     }
-    
+
     public function setResponseBody(string $body): void
     {
         $stream = $this->response->getBody();
         $stream->write($body);
-        
+
         $this->response = $this->response->withBody($stream);
     }
-    
+
     public function setJsonResponse(array $json): void
     {
+        $this->response = $this->response->withHeader(
+                                               'Content-type',
+                                               'application/json;charset=utf-8'
+                                           );
+
         $this->setResponseBody(json_encode($json));
     }
-    
-    public function process(RequestInterface $request, HandlerInterface $next): ResponseInterface
+
+    final public function process(RequestInterface $request, HandlerInterface $next): ResponseInterface
     {
-        //@Todo CHECK PERMISSIONS HERE
-        
+        $this->setQueryParams($request->getQueryParams());
+
         // Call the action set by the router
-        $action = $this->action;
-        if (method_exists($this, $action)) {
-            $this->$action($this->arguments);
+        $actionName = $this->action;
+        if (method_exists($this, $actionName)) {
+            $this->$actionName($request, ...array_values($this->getArguments()));
         }
-        
+
         // We won't call $next, so this will be the last response.
         // It will return back to upper middleware layers.
         return $this->response;

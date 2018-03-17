@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Recipeland\Helpers;
 
-use Recipeland\Traits\ParsesValidationDSLTrait;
 use Recipeland\Interfaces\ValidatorInterface;
 use Recipeland\Interfaces\FactoryInterface;
-use Recipeland\Helpers\Rules\RuleFactory;
+use Recipeland\Traits\ParsesValidationDSL;
 
 abstract class Validator implements ValidatorInterface
 {
-    use ParsesValidationDSLTrait;
+    use ParsesValidationDSL;
 
     protected $rules = [];
 
@@ -21,14 +20,9 @@ abstract class Validator implements ValidatorInterface
 
     protected $message = '';
 
-    final public function __construct(FactoryInterface $factory = null)
+    final public function __construct(FactoryInterface $factory)
     {
-        if ($factory) {
-            $this->ruleFactory = $factory;
-        } else {
-            $this->ruleFactory = new RuleFactory();
-        }
-
+        $this->ruleFactory = $factory;
         $this->init();
     }
 
@@ -90,7 +84,7 @@ abstract class Validator implements ValidatorInterface
             [$ruleClass, $value, $arguments] = $this->parseRule($rule);
 
             if ($value == 'each') {
-                if (!$this->forEach($payload, $rule)) {
+                if (!is_iterable($payload) || !$this->each($payload, $rule)) {
                     return false;
                 }
             } else {

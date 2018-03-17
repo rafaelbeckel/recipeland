@@ -6,7 +6,7 @@ namespace Recipeland\Interfaces;
 
 interface ValidatorInterface
 {
-    public function __construct(FactoryInterface $factory = null);
+    public function __construct(FactoryInterface $factory);
 
     public function addRule(string $rule): ValidatorInterface;
 

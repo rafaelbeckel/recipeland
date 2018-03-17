@@ -1,117 +1,117 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Recipeland\Http;
 
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
+use InvalidArgumentException;
 use Psr\Http\Server\MiddlewareInterface;
 use Recipeland\Interfaces\RouterInterface;
 use Recipeland\Interfaces\FactoryInterface;
 use Recipeland\Interfaces\ValidatorInterface;
-use Recipeland\Controllers\ControllerFactory;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Recipeland\Helpers\Validators\RoutesArrayValidator;
 use Psr\Http\Message\ServerRequestInterface as RequestInterface;
 
 class Router implements RouterInterface
 {
     protected $routes;
-    protected $request;
+    protected $cacheFile;
     protected $validator;
     protected $controller;
     protected $controllerFactory;
-    
-    
-    public function __construct(array $routes, FactoryInterface $factory = null, ValidatorInterface $validator = null)
-    {
-        $this->setControllerFactory($factory);
-        $this->setValidator($validator);
+
+    public function __construct(
+        array $routes,
+        FactoryInterface $factory,
+        ValidatorInterface $validator,
+        string $cacheFile = null
+    ) {
+        $this->controllerFactory = $factory;
+        $this->validator = $validator;
+        $this->cacheFile = $cacheFile;
         $this->setRoutes($routes);
     }
-    
-    
+
     public function getControllerFor(RequestInterface $request): MiddlewareInterface
     {
-        $this->request = $request;
-        $route = $this->parseRequest();
+        $route = $this->parse($request);
 
         $this->setController($route['path'], $route['arguments']);
+
         return $this->controller;
     }
-    
-    
-    public function setControllerFactory(FactoryInterface $factory = null): void
-    {
-        $this->controllerFactory = $factory ?: new ControllerFactory();
-    }
-    
-    
-    public function setValidator(ValidatorInterface $validator = null): void
-    {
-        $this->validator = $validator ?: new RoutesArrayValidator();
-    }
-    
-    
+
     public function setRoutes(array $routes): void
     {
-        $this->validator->validate($routes);
-        $this->routes = $routes;
+        if ($this->validator->validate($routes)) {
+            $this->routes = $routes;
+        } else {
+            throw new InvalidArgumentException($this->validator->getMessage());
+        }
     }
-    
-    
-    protected function parseRequest(): array
+
+    protected function parse(RequestInterface $request): array
     {
-        list($status, $path, $arguments) = $this->dispatch();
-        
-        if ($status == Dispatcher::NOT_FOUND) {
+        [$status, $path, $arguments] = $this->dispatch($request);
+
+        if (Dispatcher::NOT_FOUND == $status) {
             $path = 'Errors@not_found';
         }
-        
-        if ($status == Dispatcher::METHOD_NOT_ALLOWED) {
+
+        if (Dispatcher::METHOD_NOT_ALLOWED == $status) {
             $path = 'Errors@method_not_allowed';
         }
-        
-        return ['path'=>$path, 'arguments'=>$arguments];
+
+        return ['path' => $path, 'arguments' => $arguments];
     }
-    
-    
-    protected function dispatch(): array
+
+    protected function dispatch(RequestInterface $request): array
     {
-        $path = $this->request->getUri()->getPath();
-        
-        $httpMethod = $this->request->getMethod();
-        
+        $httpMethod = $request->getMethod();
+        $path = rtrim($request->getUri()->getPath(), '/');
+
         $dispatcher = $this->getDispatcher();
         $return = $dispatcher->dispatch($httpMethod, $path);
-        
-        return array_replace([0,'',[]], $return);
+
+        return array_replace([0, '', []], $return);
     }
-    
-    
+
     protected function getDispatcher(): Dispatcher
     {
-        return \FastRoute\simpleDispatcher(function (RouteCollector $routes) {
-            foreach ($this->routes as $route) {
-                list($method, $path, $arguments) = $route;
-                $routes->addRoute($method, $path, $arguments);
-            }
-        });
+        if ($this->cacheFile) {
+            return \FastRoute\cachedDispatcher($this->getRoutesClosure(), [
+                'cacheFile' => $this->cacheFile,
+            ]);
+        } else {
+            return \FastRoute\simpleDispatcher($this->getRoutesClosure());
+        }
     }
-    
-    
-    protected function setController(string $route, array $arguments=[]): void
+
+    protected function getRoutesClosure()
     {
-        list($className, $method) = explode("@", $route);
+        return function (RouteCollector $collector) {
+            foreach ($this->routes as $route) {
+                [$method, $path, $arguments] = $route;
+                $path = rtrim($path, '/');
+                $collector->addRoute($method, $path, $arguments);
+            }
+        };
+    }
+
+    protected function setController(string $route, array $arguments = []): void
+    {
+        [$className, $method] = explode('@', $route);
         try {
-            $this->controller = $this->controllerFactory->build($className);
-            $this->controller->setAction($method);
-            $this->controller->setArguments($arguments);
+            $this->controller = $this->controllerFactory->build(
+                $className,
+                $method,
+                $arguments
+            );
         } catch (Exception $e) {
             if ($className == 'Errors') {
                 throw new RuntimeException(self::ERROR_CONTROLLER_NOT_FOUND);
             }
-                
             $this->setController('Errors@not_found');
         }
     }

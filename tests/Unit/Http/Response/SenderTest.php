@@ -16,10 +16,10 @@ class SenderTest extends TestSuite
         echo '(running in background) Sender: Testing the response renderer output';
 
         $response = new Response(200, [], 'lorem ipsum');
-        $sender = new Sender($response);
+        $sender = new Sender();
 
         ob_start();
-        $sender->send();
+        $sender->send($response);
         $output = ob_get_contents();
 
         $this->assertEquals('lorem ipsum', $output);

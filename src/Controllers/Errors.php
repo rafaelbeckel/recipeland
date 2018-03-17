@@ -2,7 +2,7 @@
 
 namespace Recipeland\Controllers;
 
-use Recipeland\Controllers\Controller;
+use Recipeland\Controllers\AbstractController as Controller;
 use Symfony\Component\HttpFoundation\Response;
 
 class Errors extends Controller

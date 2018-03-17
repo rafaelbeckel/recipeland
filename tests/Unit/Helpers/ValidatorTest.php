@@ -6,18 +6,9 @@ use Recipeland\Helpers\Rules\AbstractRule;
 use Recipeland\Helpers\Validator;
 use Recipeland\Helpers\Factory;
 use Tests\TestSuite;
-use Mockery as m;
 
 class ValidatorTest extends TestSuite
 {
-    protected $rule;
-    protected $factory;
-
-    public function setUp()
-    {
-        $this->factory = m::mock(Factory::class);
-    }
-
     public function test_call_the_right_rule_true()
     {
         echo 'Validator - DSL: should call the right rule class - return true';
@@ -25,22 +16,25 @@ class ValidatorTest extends TestSuite
         $weWillTestYou = 'i_will_return_true';
         $camelCasedRuleName = 'RuleName';
 
-        $rule = m::mock(AbstractRule::class, ['i_will_return_true']);
-        $rule->shouldReceive('apply')->once()
-             ->andReturn(true);
+        $rule = $this->createMock(AbstractRule::class, ['i_will_return_true']);
+        $factory = $this->createMock(Factory::class);
 
-        $this->factory
-             ->shouldReceive('build')->once()
-             ->with($camelCasedRuleName, $weWillTestYou)
-             ->andReturn($rule);
+        $rule->expects($this->once())
+             ->method('apply')
+             ->willReturn(true);
 
-        $validator = new class($this->factory) extends Validator {
+        $factory->expects($this->once())
+                ->method('build')
+                ->with($camelCasedRuleName, $weWillTestYou)
+                ->willReturn($rule);
+
+        $validator = new class($factory) extends Validator {
             protected function init(): void
             {
                 $this->addRule('rule_name');
             }
         };
-        
+
         $this->assertTrue($validator->validate($weWillTestYou));
     }
 
@@ -51,18 +45,23 @@ class ValidatorTest extends TestSuite
         $weWillTestYou = 'i_will_return_false_im_so_falsy';
         $camelCasedRuleName = 'RuleName';
 
-        $rule = m::mock(AbstractRule::class, ['i_will_return_false_im_so_falsy']);
-        $rule->shouldReceive('apply')->once()
-             ->andReturn(false)
-             ->shouldReceive('getMessage')->once()
-             ->andReturn('You are False!');
+        $rule = $this->createMock(AbstractRule::class, ['i_will_return_false_im_so_falsy']);
+        $factory = $this->createMock(Factory::class);
 
-        $this->factory
-             ->shouldReceive('build')->once()
-             ->with($camelCasedRuleName, $weWillTestYou)
-             ->andReturn($rule);
+        $rule->expects($this->once())
+             ->method('apply')
+             ->willReturn(false);
 
-        $validator = new class($this->factory) extends Validator {
+        $rule->expects($this->once())
+             ->method('getMessage')
+             ->willReturn('You are False!');
+
+        $factory->expects($this->once())
+                ->method('build')
+                ->with($camelCasedRuleName, $weWillTestYou)
+                ->willReturn($rule);
+
+        $validator = new class($factory) extends Validator {
             protected function init(): void
             {
                 $this->addRule('rule_name');
@@ -80,17 +79,20 @@ class ValidatorTest extends TestSuite
         $weWillTestYou = ['I', 'Have', '4', 'Items'];
         $camelCasedRuleName = 'RuleName';
 
-        $rule = m::mock(AbstractRule::class, [4]);
-        $rule->shouldReceive('apply')
-             ->once()
-             ->andReturn(true);
+        $rule = $this->createMock(AbstractRule::class, [4]);
+        $factory = $this->createMock(Factory::class);
 
-        $this->factory
-             ->shouldReceive('build')
-             ->with($camelCasedRuleName, 4)->once()
-             ->andReturn($rule);
+        $rule->expects($this->once())
+             ->method('apply')
+             ->willReturn(true);
 
-        $validator = new class($this->factory) extends Validator {
+        $factory
+             ->expects($this->once())
+             ->method('build')
+             ->with($camelCasedRuleName, 4)
+             ->willReturn($rule);
+
+        $validator = new class($factory) extends Validator {
             protected function init(): void
             {
                 $this->addRule('count:rule_name');
@@ -107,15 +109,17 @@ class ValidatorTest extends TestSuite
         $weWillTestYou = ['I', 'Am', 'The', 'Fourth', 'Item'];
         $camelCasedRuleName = 'RuleName';
 
-        $rule = m::mock(AbstractRule::class, ['Fourth']);
-        $rule->shouldReceive('apply')->once()
-             ->andReturn(true);
+        $rule = $this->createMock(AbstractRule::class, ['Fourth']);
+        $factory = $this->createMock(Factory::class);
 
-        $this->factory->shouldReceive('build')
-             ->with($camelCasedRuleName, 'Fourth')->once()
-             ->andReturn($rule);
+        $rule->method('apply')
+             ->willReturn(true);
 
-        $validator = new class($this->factory) extends Validator {
+        $factory->method('build')
+             ->with($camelCasedRuleName, 'Fourth')
+             ->willReturn($rule);
+
+        $validator = new class($factory) extends Validator {
             protected function init(): void
             {
                 $this->addRule('item(3):rule_name');
@@ -132,39 +136,45 @@ class ValidatorTest extends TestSuite
         $weWillTestYou = ['I', 'Have', 'Multiple', 'Items'];
         $camelCasedRuleName = 'RuleName';
 
-        $rule1 = m::mock(AbstractRule::class, ['I']);
-        $rule1->shouldReceive('apply')->once()
-              ->andReturn(true);
+        $factory = $this->createMock(Factory::class);
 
-        $rule2 = m::mock(AbstractRule::class, ['Have']);
-        $rule2->shouldReceive('apply')->once()
-              ->andReturn(true);
+        $rule1 = $this->createMock(AbstractRule::class, ['I']);
+        $rule1->method('apply')
+              ->willReturn(true);
 
-        $rule3 = m::mock(AbstractRule::class, ['Multiple']);
-        $rule3->shouldReceive('apply')->once()
-              ->andReturn(true);
+        $rule2 = $this->createMock(AbstractRule::class, ['Have']);
+        $rule2->method('apply')
+              ->willReturn(true);
 
-        $rule4 = m::mock(AbstractRule::class, ['Items']);
-        $rule4->shouldReceive('apply')->once()
-              ->andReturn(true);
+        $rule3 = $this->createMock(AbstractRule::class, ['Multiple']);
+        $rule3->method('apply')
+              ->willReturn(true);
 
-        $this->factory->shouldReceive('build')
-             ->with($camelCasedRuleName, 'I')
-             ->andReturn($rule1);
+        $rule4 = $this->createMock(AbstractRule::class, ['Items']);
+        $rule4->method('apply')
+              ->willReturn(true);
 
-        $this->factory->shouldReceive('build')
-             ->with($camelCasedRuleName, 'Have')
-             ->andReturn($rule2);
+        $factory->expects($this->at(0))
+                ->method('build')
+                ->with($camelCasedRuleName, 'I')
+                ->willReturn($rule1);
 
-        $this->factory->shouldReceive('build')
-             ->with($camelCasedRuleName, 'Multiple')
-             ->andReturn($rule3);
+        $factory->expects($this->at(1))
+                ->method('build')
+                ->with($camelCasedRuleName, 'Have')
+                ->willReturn($rule2);
 
-        $this->factory->shouldReceive('build')
-             ->with($camelCasedRuleName, 'Items')
-             ->andReturn($rule4);
+        $factory->expects($this->at(2))
+                ->method('build')
+                ->with($camelCasedRuleName, 'Multiple')
+                ->willReturn($rule3);
 
-        $validator = new class($this->factory) extends Validator {
+        $factory->expects($this->at(3))
+                ->method('build')
+                ->with($camelCasedRuleName, 'Items')
+                ->willReturn($rule4);
+
+        $validator = new class($factory) extends Validator {
             protected function init(): void
             {
                 $this->addRule('each:rule_name');

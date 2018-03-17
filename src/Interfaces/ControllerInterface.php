@@ -1,26 +1,26 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Recipeland\Interfaces;
 
-use Psr\Http\Message\ResponseInterface;
-
 interface ControllerInterface
 {
-    public function __construct(ResponseInterface $response = null);
-    
-    public function defaultAction(): void;
-    
-    public function setAction(string $action): void;
-    
+    public function __construct(string $action, array $arguments);
+
+    public function getMiddleware(): array;
+
     public function getAction(): string;
-    
-    public function setArguments(array $arguments): void;
-    
-    public function getArguments(): string;
-    
+
+    public function getArguments(): array;
+
+    public function setQueryParams(array $params): void;
+
+    public function getQueryParam(string $key, $default);
+
     public function setStatus(int $code): void;
-    
+
     public function setResponseBody(string $body): void;
-    
+
     public function setJsonResponse(array $json): void;
 }

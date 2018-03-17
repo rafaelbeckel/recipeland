@@ -16,6 +16,7 @@
         "filp/whoops": "^2.1",
         "lcobucci/jwt": "^3.2",
         "predis/predis": "^1.1",
+        "php-di/php-di": "^6.0",
         "monolog/monolog": "^1.23",
         "vlucas/phpdotenv": "^2.4",
         "nikic/fast-route": "^1.3",
@@ -38,7 +39,6 @@
     },
     "require-dev": {
         "phpunit/phpunit": "dev-issue-3031_fix_based_on_7.0.2",
-        "mockery/mockery": "dev-master",
         "friendsofphp/php-cs-fixer": "^2.10",
         "vicebas/php-docblock-generator": "^1.0"
     },
@@ -64,7 +64,8 @@
         "migrate" : "./vendor/bin/phinx migrate",
         "rollback" : "./vendor/bin/phinx rollback",
         "reset" : "./vendor/bin/phinx rollback -t 0",
-        "seed" : "./vendor/bin/phinx seed:run"
+        "seed" : "./vendor/bin/phinx seed:run",
+        "doc" : "./vendor/bin/docblock"
     }
     
 }

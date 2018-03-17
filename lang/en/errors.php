@@ -9,6 +9,4 @@ return [
     'second_element_must_be_url_path' => "Second element of routes array must be URL Path",
     'third_element_must_be_controller_and_action' => "Third element of routes array must be in the format Controller@action",
     
-    'url_path_pattern' => "|(\/)([\w\/\[\]\{\}]*)(\??[\w\/\[\]\{\}]+\=[\w\/\[\]\{\}]+)*(\&?[\w\/\[\]\{\}]+\=[\w\/\[\]\{\}]+)*|i",
-    'at_pattern' => "|[^@]*@[^@]*|",
 ]

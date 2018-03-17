@@ -5,7 +5,7 @@ namespace Recipeland\Traits;
 use InvalidArgumentException;
 use Recipeland\Helpers\Validator;
 
-trait ParsesValidationDSLTrait
+trait ParsesValidationDSL
 {
     private function parseRule(string $rule): array
     {
@@ -42,7 +42,7 @@ trait ParsesValidationDSLTrait
         }
     }
 
-    private function forEach(iterable $payload, string $rule): bool
+    private function each(iterable $payload, string $rule): bool
     {
         foreach ($payload as $value) {
             $validator = new class($this->ruleFactory) extends Validator {

@@ -5,41 +5,73 @@ namespace Tests\Unit;
 use Recipeland\Controllers\AbstractController as Controller;
 use GuzzleHttp\Psr7\ServerRequest as Request;
 use Recipeland\Interfaces\RouterInterface;
-use Recipeland\Interfaces\StackInterface;
+use Recipeland\Interfaces\SenderInterface;
 use Psr\Http\Message\ResponseInterface;
+use Recipeland\Stack;
 use Tests\TestSuite;
-use Mockery as m;
+use Recipeland\App;
 
 class AppTest extends TestSuite
 {
+    protected $controller;
+    protected $request;
+    protected $router;
+    protected $stack;
+    protected $sender;
+
+    public function setUp()
+    {
+        parent::setUp();
+
+        $this->request = new Request('GET', '/foo');
+
+        $this->controller = $this->createMock(Controller::class);
+        $this->router = $this->createMock(RouterInterface::class);
+        $this->stack = $this->createMock(Stack::class);
+        $this->sender = $this->createMock(SenderInterface::class);
+
+        $this->router->expects($this->once())
+                     ->method('getControllerFor')
+                     ->with($this->request)
+                     ->willReturn($this->controller);
+
+        $this->stack->expects($this->once())
+                    ->method('append')
+                    ->with($this->controller);
+
+        $this->stack->expects($this->once())
+                    ->method('resetPointerToFirstItem');
+
+        $this->stack->expects($this->once())
+                    ->method('handle')
+                    ->with($this->request)
+                    ->willReturn($this->createMock(ResponseInterface::class));
+    }
+
     public function test_go_method_returns_psr7_Response_instance()
     {
         echo 'App: go() method must return a PSR-7 Response object';
 
-        // $request = new Request('GET', '/foo');
+        $app = new App($this->router, $this->stack, $this->sender);
 
-        // $controller = m::mock(Controller::class);
+        $response = $app->go($this->request);
 
-        // $router = m::mock(RouterInterface::class);
-        // $router->shouldReceive('getControllerFor')
-        //       ->with($request)->once()
-        //       ->andReturn($controller);
+        $this->assertInstanceOf(ResponseInterface::class, $response);
+    }
 
-        // $stack = m::mock(StackInterface::class);
-        // $stack->shouldReceive('append')
-        //       ->with($controller)->once()
-        //       ->andReturn(m::spy(Controller::class))
-        //       ->shouldReceive('resetPointerToFirstItem')
-        //       ->shouldReceive('handle')
-        //       ->with($request)->once()
-        //       ->andReturn(m::mock(ResponseInterface::class));
+    public function test_render_method_delegates_Response_to_Sender()
+    {
+        echo 'App: render() method must delegate Response to Sender';
 
-        // $app = new App($router, $stack);
+        $sender = $this->createMock(SenderInterface::class);
 
-        // $response = $app->go($request);
+        $app = new App($this->router, $this->stack, $sender);
+        $response = $app->go($this->request);
 
-        // $this->assertInstanceOf(ResponseInterface::class, $response);
+        $sender->expects($this->once())
+               ->method('send')
+               ->with($response);
 
-        $this->markTestIncomplete('App interface will change.');
+        $app->render($response);
     }
 }

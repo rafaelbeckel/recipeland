@@ -2,7 +2,6 @@
 
 namespace Tests;
 
-use Mockery as m;
 use PHPUnit\Framework\TestCase;
 
 abstract class TestSuite extends TestCase
@@ -21,8 +20,6 @@ abstract class TestSuite extends TestCase
 
     public function tearDown()
     {
-        m::close();
-
         if ($this->getStatus() != 0) {
             $this->red($this->getStatusMessage());
         } else {

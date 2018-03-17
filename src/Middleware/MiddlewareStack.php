@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Recipeland\Middleware;
 
@@ -7,10 +9,15 @@ use Recipeland\Stack;
 class MiddlewareStack extends Stack
 {
     /**
-     * Middleware list for ALL routes
+     * Middleware list for ALL routes.
      */
     protected $items = [
-        \Recipeland\Middlewares\HttpsOnly::class,
-        \Recipeland\Middlewares\AddSecurityHeaders::class,
+        HttpsOnly::class, //ok
+        AddSecurityHeaders::class, //ok
+        GetDataSources::class, //ok
+        //AuthenticateUsers::class, //@todo implement
+        //ValidateRequests::class, //@todo implement
+
+        // @todo remove those comments
     ];
 }

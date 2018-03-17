@@ -3,21 +3,25 @@
 namespace Tests\Unit;
 
 use GuzzleHttp\Psr7\ServerRequest as Request;
+use Recipeland\Interfaces\FactoryInterface;
 use Recipeland\Interfaces\StackInterface;
 use Psr\Http\Server\MiddlewareInterface;
+use GuzzleHttp\Psr7\Response;
 use Recipeland\Stack;
 use Tests\TestSuite;
-use Mockery as m;
 
 class StackTest extends TestSuite
 {
     protected $stack;
+    protected $f;
 
     public function setUp()
     {
         parent::setUp();
 
-        $this->stack = new class() extends Stack {
+        $this->f = $this->createMock(FactoryInterface::class);
+
+        $this->stack = new class($this->f) extends Stack {
             protected $items = ['foo', 'bar', 'baz'];
         };
     }
@@ -34,7 +38,7 @@ class StackTest extends TestSuite
 
         $expected = ['fizz', 'buzz'];
 
-        $stack = new class(['fizz', 'buzz']) extends Stack {
+        $stack = new class($this->f, ['fizz', 'buzz']) extends Stack {
             protected $items = ['foo', 'bar', 'baz'];
         };
 
@@ -123,21 +127,26 @@ class StackTest extends TestSuite
         echo 'Stack: test handle(request) calls Middleware and returns Response object';
 
         $request = new Request('GET', '/');
-        $middleware = m::spy(MiddlewareInterface::class);
-        $stack = new class([$middleware]) extends Stack {
+        $middleware = $this->createMock(MiddlewareInterface::class);
+
+        $stack = new class($this->f, [$middleware]) extends Stack {
         };
+
+        $middleware->expects($this->once())
+                   ->method('process')
+                   ->with($request, $stack)
+                   ->willReturn($this->createMock(Response::class));
 
         $response = $stack->handle($request);
 
-        $middleware->shouldHaveReceived('process')->with($request, $stack)->once();
-
-        // Ugly workaround for Mockery BUG #785
-        $this->addToAssertionCount(1);
+        $this->f->expects($this->never())
+                ->method('build');
     }
 
     public function test_last()
     {
-        // Just a spacer for my fancy custom output.
+        $beer = "\u{1F37A} ";
+        echo 'ALL TESTS FINISHED! '.$beer.$beer.$beer;
         $this->assertTrue(true);
     }
 }

@@ -1,12 +1,9 @@
 <?php
 
-/**
- * Register the autoloader
- */
-require __DIR__ . '/../vendor/autoload.php';
+declare(strict_types=1);
 
-/**
- * Read environment variables
- */
-$env = new Dotenv\Dotenv(__DIR__.'/..');
-$env->load();
+if (!defined('BASE_DIR')) {
+    define('BASE_DIR', __DIR__.'/..');
+}
+
+require BASE_DIR.'/vendor/autoload.php';

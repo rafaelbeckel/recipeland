@@ -1,63 +1,58 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Recipeland;
 
 use Psr\Http\Message\ServerRequestInterface as RequestInterface;
-use Psr\Http\Server\RequestHandlerInterface as HandlerInterface;
-use Recipeland\Middleware\MiddlewareStack;
 use Recipeland\Interfaces\RouterInterface;
+use Recipeland\Interfaces\SenderInterface;
 use Recipeland\Interfaces\StackInterface;
-use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Message\ResponseInterface;
 
-class App
+final class App
 {
-    protected $router;
-    protected $stack;
-    
-    public function __construct(RouterInterface $router, StackInterface $stack = null)
-    {
-        $this->setRouter($router);
-        
-        if ($stack) {
-            $this->setStack($stack);
-        } else {
-            $this->setStack(new MiddlewareStack);
-        }
+    private $router;
+    private $stack;
+    private $sender;
+
+    public function __construct(
+        RouterInterface $router,
+        StackInterface $stack,
+        SenderInterface $sender
+    ) {
+        $this->router = $router;
+        $this->stack = $stack;
+        $this->sender = $sender;
     }
-    
+
     public function go(RequestInterface $request): ResponseInterface
     {
         $controller = $this->router->getControllerFor($request);
-        
-        foreach ($controller->getMiddleware() as $controllerMiddleware) {
-            $this->stack->append($controllerMiddleware);
-        }
-        
         $this->stack->append($controller);
-        
         $response = $this->processStack($request);
+
         return $response;
     }
-    
-    public function setRouter(RouterInterface $router): void
+
+    public function render(ResponseInterface $response)
     {
-        $this->router = $router;
+        $this->sender->send($response);
     }
-    
-    public function setStack(StackInterface $stack): void
-    {
-        $this->stack = $stack;
-    }
-    
-    public function processStack(RequestInterface $request): ResponseInterface
+
+    private function processStack(RequestInterface $request): ResponseInterface
     {
         $this->stack->resetPointerToFirstItem();
+
         return $this->stack->handle($request);
     }
-    
-    public function close()
+
+    public function close($request, $response)
     {
-        // do nothing... for now.
+        // You can implement calls to long-running processes here
+        // Like sending e-mails,
+
+        // $this->logger->info('Look, Ma! I am running in Background!');
+        // $this->logger->info('Execution time: ');
     }
 }

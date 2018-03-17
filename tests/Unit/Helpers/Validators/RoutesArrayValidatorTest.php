@@ -2,13 +2,23 @@
 
 namespace Tests\Unit\Helpers\Validators;
 
-use InvalidArgumentException;
-use Recipeland\Http\Router;
+use Recipeland\Helpers\Validators\RoutesArrayValidator;
+use Recipeland\Helpers\Rules\RuleFactory;
 use Tests\TestSuite;
-use TypeError;
 
 class RoutesArrayValidatorTest extends TestSuite
 {
+    protected $v;
+
+    public function setUp()
+    {
+        parent::setUp();
+
+        $factory = new RuleFactory();
+
+        $this->v = new RoutesArrayValidator($factory);
+    }
+
     public function test_Route_should_not_accept_non_array_arguments()
     {
         echo 'RoutesArrayValidator: should only accept arrays';
@@ -25,9 +35,8 @@ class RoutesArrayValidatorTest extends TestSuite
             null,
         ];
 
-        foreach ($arguments as $argument) {
-            $this->expectException(TypeError::class);
-            $router = new Router($argument);
+        foreach ($arguments as $value) {
+            $this->assertFalse($this->v->validate($value));
         }
     }
 
@@ -35,18 +44,14 @@ class RoutesArrayValidatorTest extends TestSuite
     {
         echo 'RoutesArrayValidator: should not accept empty array';
 
-        $this->expectException(InvalidArgumentException::class);
-
         $routes = [];
 
-        $router = new Router($routes);
+        $this->assertFalse($this->v->validate($routes));
     }
 
     public function test_Route_array_validation_missing_string()
     {
         echo 'RoutesArrayValidator: routes array must be complete';
-
-        $this->expectException(InvalidArgumentException::class);
 
         $routes = [
             ['GET', '/foo', 'Recipes@get'],
@@ -54,14 +59,12 @@ class RoutesArrayValidatorTest extends TestSuite
             ['PUT', 'Recipes@update'],  //Missing string
         ];
 
-        $router = new Router($routes);
+        $this->assertFalse($this->v->validate($routes));
     }
 
     public function test_Route_array_validation_extra_string()
     {
         echo 'RoutesArrayValidator: routes array should not have extra string';
-
-        $this->expectException(InvalidArgumentException::class);
 
         $routes = [
             ['GET', '/foo', 'Recipes@get'],
@@ -69,45 +72,52 @@ class RoutesArrayValidatorTest extends TestSuite
             ['PUT', '/foo', 'Recipes@update', 'Too Many Strings'],
         ];
 
-        $router = new Router($routes);
+        $this->assertFalse($this->v->validate($routes));
     }
 
     public function test_Route_array_validation_first_element()
     {
         echo 'RoutesArrayValidator: first element must be HTTP method';
 
-        $this->expectException(InvalidArgumentException::class);
-
         $routes = [
             ['I am not an HTTP Verb', '/foo', 'Recipes@get'],
         ];
 
-        $router = new Router($routes);
+        $this->assertFalse($this->v->validate($routes));
     }
 
     public function test_Route_array_validation_second_element()
     {
         echo 'RoutesArrayValidator: second element must be URL path';
 
-        $this->expectException(InvalidArgumentException::class);
-
         $routes = [
             ['GET', '???', 'Recipes@get'],
         ];
 
-        $router = new Router($routes);
+        $this->assertFalse($this->v->validate($routes));
     }
 
     public function test_Route_array_validation_third_element()
     {
         echo 'RoutesArrayValidator: third element must be Controller@action';
 
-        $this->expectException(InvalidArgumentException::class);
-
         $routes = [
             ['GET', '/foo', 'No_Symbol'],
         ];
 
-        $router = new Router($routes);
+        $this->assertFalse($this->v->validate($routes));
+    }
+
+    public function test_Route_array_validation_valid_array()
+    {
+        echo 'RoutesArrayValidator: testing a valid entry';
+
+        $routes = [
+            ['GET', '/i', 'I_@_am'],
+            ['GET', '/am', 'A_@_totally'],
+            ['PUT', '/valid', 'Valid_@_entry'],
+        ];
+
+        $this->assertTrue($this->v->validate($routes));
     }
 }
