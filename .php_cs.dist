@@ -10,6 +10,7 @@ return PhpCsFixer\Config::create()
         '@Symfony' => true,
         'yoda_style' => false,
         'array_syntax' => ['syntax' => 'short'],
-        'braces' => ['allow_single_line_closure', true],
+        'braces' => ['allow_single_line_closure' => true],
+        'binary_operator_spaces' => ['default' => 'align'],
     ])
     ->setFinder($finder);
