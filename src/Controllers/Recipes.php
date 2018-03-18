@@ -38,7 +38,7 @@ class Recipes extends Controller
      * @params ServerRequestInterface
      * @params integer $id
      **/
-    public function get(Request $request)
+    public function list(Request $request)
     {
         $page = $this->getQueryParam('page', 1);
 
@@ -112,7 +112,7 @@ class Recipes extends Controller
      * @params ServerRequestInterface
      * @params integer $id
      **/
-    public function remove(Request $request, $id)
+    public function delete(Request $request, $id)
     {
         $this->setResponseBody('Hi, '.__METHOD__.'!');
     }

@@ -56,11 +56,11 @@ class Router implements RouterInterface
         [$status, $path, $arguments] = $this->dispatch($request);
 
         if (Dispatcher::NOT_FOUND == $status) {
-            $path = 'Errors@not_found';
+            $path = 'Errors.not_found';
         }
 
         if (Dispatcher::METHOD_NOT_ALLOWED == $status) {
-            $path = 'Errors@method_not_allowed';
+            $path = 'Errors.method_not_allowed';
         }
 
         return ['path' => $path, 'arguments' => $arguments];
@@ -101,7 +101,7 @@ class Router implements RouterInterface
 
     protected function setController(string $route, array $arguments = []): void
     {
-        [$className, $method] = explode('@', $route);
+        [$className, $method] = explode('.', $route);
         try {
             $this->controller = $this->controllerFactory->build(
                 $className,
@@ -112,7 +112,7 @@ class Router implements RouterInterface
             if ($className == 'Errors') {
                 throw new RuntimeException(self::ERROR_CONTROLLER_NOT_FOUND);
             }
-            $this->setController('Errors@not_found');
+            $this->setController('Errors.not_found');
         }
     }
 }

@@ -3,11 +3,11 @@
   array (
     'GET' => 
     array (
-      '/recipes' => 'Recipes@get',
+      '/recipes' => 'Recipes.list',
     ),
     'POST' => 
     array (
-      '/recipes' => 'Recipes@create',
+      '/recipes' => 'Recipes.create',
     ),
   ),
   1 => 
@@ -21,7 +21,7 @@
         array (
           2 => 
           array (
-            0 => 'Recipes@read',
+            0 => 'Recipes.read',
             1 => 
             array (
               'id' => 'id',
@@ -39,7 +39,7 @@
         array (
           2 => 
           array (
-            0 => 'Recipes@update',
+            0 => 'Recipes.update',
             1 => 
             array (
               'id' => 'id',
@@ -57,7 +57,7 @@
         array (
           2 => 
           array (
-            0 => 'Recipes@updateField',
+            0 => 'Recipes.updateField',
             1 => 
             array (
               'id' => 'id',
@@ -75,7 +75,7 @@
         array (
           2 => 
           array (
-            0 => 'Recipes@remove',
+            0 => 'Recipes.delete',
             1 => 
             array (
               'id' => 'id',
@@ -93,7 +93,7 @@
         array (
           2 => 
           array (
-            0 => 'Recipes@rate',
+            0 => 'Recipes.rate',
             1 => 
             array (
               'id' => 'id',

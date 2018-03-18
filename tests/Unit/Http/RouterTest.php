@@ -34,7 +34,7 @@ class RouterTest extends TestSuite
                 ->willReturn($this->createMock(Controller::class));
 
         $request = new Request('GET', '/foo');
-        $router = new Router([['GET', '/foo', 'Bar@baz']], $factory, $this->v);
+        $router = new Router([['GET', '/foo', 'Bar.baz']], $factory, $this->v);
 
         // Let's call our router
         $controller = $router->getControllerFor($request);
@@ -55,7 +55,7 @@ class RouterTest extends TestSuite
                 ->willReturn($this->createMock(Controller::class));
 
         $request = new Request('GET', '/foo/1234/make/Coffee');
-        $router = new Router([['GET', '/foo/{id}/make/{name}', 'Bar@baz']], $factory, $this->v);
+        $router = new Router([['GET', '/foo/{id}/make/{name}', 'Bar.baz']], $factory, $this->v);
 
         // Let's call our router
         $router->getControllerFor($request);
@@ -63,7 +63,7 @@ class RouterTest extends TestSuite
 
     public function test_Router_non_existent_route()
     {
-        echo 'Router: should call Error controller @ not_found action for a non-existent route';
+        echo 'Router: should call Error controller . not_found action for a non-existent route';
 
         // Router will ask the factory to build the Error Controller
         $factory = $this->createMock(FactoryInterface::class);
@@ -73,7 +73,7 @@ class RouterTest extends TestSuite
                 ->willReturn($this->createMock(Controller::class));
 
         $request = new Request('GET', '/foooooooo');
-        $router = new Router([['GET', '/foo', 'Bar@baz']], $factory, $this->v);
+        $router = new Router([['GET', '/foo', 'Bar.baz']], $factory, $this->v);
 
         // Let's call our router
         $router->getControllerFor($request);
@@ -96,7 +96,7 @@ class RouterTest extends TestSuite
                 ->willReturn($this->createMock(Controller::class));
 
         // CALL 1: We'll instantiate our router with the optional cache_file argument
-        $router = new Router([['GET', '/cached', 'Bar@baz']], $factory, $this->v, $cache_file);
+        $router = new Router([['GET', '/cached', 'Bar.baz']], $factory, $this->v, $cache_file);
         $request = new Request('GET', '/cached');
         $router->getControllerFor($request);
 
@@ -119,7 +119,7 @@ class RouterTest extends TestSuite
                 ->willReturn($this->createMock(Controller::class));
 
         // CALL 2: We'll call our router again, with the cache file. It should NOT find the route.
-        $router = new Router([['GET', '/not_cached', 'Baz@bim']], $factory, $this->v, $cache_file);
+        $router = new Router([['GET', '/not_cached', 'Baz.bim']], $factory, $this->v, $cache_file);
         $request = new Request('GET', '/not_cached');
         $router->getControllerFor($request);
     }
@@ -139,7 +139,7 @@ class RouterTest extends TestSuite
                 ->willReturn($this->createMock(Controller::class));
 
         // CALL 3: cache should prevail over the array definition.
-        $router = new Router([['GET', '/not_cached', 'Baz@bim']], $factory, $this->v, $cache_file);
+        $router = new Router([['GET', '/not_cached', 'Baz.bim']], $factory, $this->v, $cache_file);
         $request = new Request('GET', '/cached');
         $router->getControllerFor($request);
     }
@@ -159,7 +159,7 @@ class RouterTest extends TestSuite
                 ->willReturn($this->createMock(Controller::class));
 
         // Call 4: The file argument is not present, so it will find the route in the array.
-        $router = new Router([['GET', '/not_cached', 'Baz@bim']], $factory, $this->v);
+        $router = new Router([['GET', '/not_cached', 'Baz.bim']], $factory, $this->v);
         $request = new Request('GET', '/not_cached');
         $router->getControllerFor($request);
 
@@ -170,7 +170,7 @@ class RouterTest extends TestSuite
 
     public function test_Router_calls_partial_route_name()
     {
-        echo 'Router: should call Error controller @ not_found action for a route with incomplete name';
+        echo 'Router: should call Error controller . not_found action for a route with incomplete name';
 
         // Router will ask the factory to build the Error Controller
         $factory = $this->createMock(FactoryInterface::class);
@@ -180,7 +180,7 @@ class RouterTest extends TestSuite
                 ->willReturn($this->createMock(Controller::class));
 
         $request = new Request('GET', '/fo');
-        $router = new Router([['GET', '/foo', 'Bar@baz']], $factory, $this->v);
+        $router = new Router([['GET', '/foo', 'Bar.baz']], $factory, $this->v);
 
         // Let's call our router
         $router->getControllerFor($request);
@@ -188,7 +188,7 @@ class RouterTest extends TestSuite
 
     public function test_Router_calls_invalid_http_verb()
     {
-        echo 'Router: should call Error controller @ method_not_allowed action for a wrong HTTP method call';
+        echo 'Router: should call Error controller . method_not_allowed action for a wrong HTTP method call';
 
         // Router will ask the factory to build the Error Controller
         $factory = $this->createMock(FactoryInterface::class);
@@ -198,7 +198,7 @@ class RouterTest extends TestSuite
                 ->willReturn($this->createMock(Controller::class));
 
         $request = new Request('POST', '/foo');
-        $router = new Router([['GET',  '/foo', 'Bar@baz']], $factory, $this->v);
+        $router = new Router([['GET',  '/foo', 'Bar.baz']], $factory, $this->v);
 
         // Let's call our router
         $router->getControllerFor($request);

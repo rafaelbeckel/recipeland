@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Recipeland\Helpers\Validators;
 
-use InvalidArgumentException;
 use Recipeland\Helpers\Validator;
 
 class RoutesArrayValidator extends Validator
@@ -18,6 +17,6 @@ class RoutesArrayValidator extends Validator
              ->addRule('each:count:equals(3)')
              ->addRule('each:item(0):is_http_method')
              ->addRule('each:item(1):is_url_path')
-             ->addRule('each:item(2):is_pattern(|[^@]*@[^@]*|)');
+             ->addRule('each:item(2):is_pattern(|[^\.]*\.[^\.]*|)');
     }
 }
