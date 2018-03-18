@@ -11,6 +11,8 @@ use Recipeland\Helpers\Rules\NotEmpty;
 use Recipeland\Helpers\Rules\IsArray;
 use Recipeland\Helpers\Rules\Equals;
 use Recipeland\Helpers\Rules\IsType;
+use Recipeland\Helpers\Rules\Min;
+use Recipeland\Helpers\Rules\Max;
 use Tests\TestSuite;
 
 class RulesTest extends TestSuite
@@ -48,6 +50,28 @@ class RulesTest extends TestSuite
         $this->assertTrue($isbetween->apply(5, 5));
         $this->assertFalse($isbetween->apply(4, 4));
         $this->assertFalse($isbetween->apply(6, 6));
+    }
+    
+    public function test_rule_min()
+    {
+        echo 'Rule: min';
+
+        $min = new Min(5);
+
+        $this->assertTrue($min->apply(5));
+        $this->assertTrue($min->apply(6));
+        $this->assertFalse($min->apply(4));
+    }
+    
+    public function test_rule_max()
+    {
+        echo 'Rule: max';
+
+        $max = new Max(5);
+
+        $this->assertTrue($max->apply(5));
+        $this->assertTrue($max->apply(4));
+        $this->assertFalse($max->apply(6));
     }
 
     public function test_rule_is_http_method()
