@@ -18,7 +18,7 @@ trait ParsesValidationDSL
             $ruleClass = $this->toCamelCase($rulename);
 
             if (empty($value)) {
-                throw new InvalidArgumentException('Invalid Rule Format.');
+                throw new InvalidArgumentException('Invalid Rule Format or Item not Found.');
             }
         } else {
             $value = $this->payload;
@@ -74,14 +74,34 @@ trait ParsesValidationDSL
         return [$functionName, $arguments];
     }
 
-    private function count()
+    private function count(): int
     {
         return count((array) $this->payload);
     }
 
     private function item($key)
     {
-        return $this->payload[$key];
+        if (is_array($this->payload)) {
+            return $this->payload[$key] ?? null;
+        } elseif (
+            (is_string($this->payload) || is_numeric($this->payload)) &&
+            is_numeric($key) &&
+            intval($key) >= 0 &&
+            intval($key) < strlen((string) $this->payload)
+        ) {
+            return ((string) $this->payload)[intval($key)];
+        } else {
+            return null;
+        }
+    }
+    
+    private function chars(): ?int
+    {
+        if (is_string($this->payload) || is_numeric($this->payload)) {
+            return strlen((string) $this->payload);
+        } else {
+            return null;
+        }
     }
 
     private function toCamelCase(string $string): string
