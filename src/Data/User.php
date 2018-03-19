@@ -36,6 +36,12 @@ class User extends Model
     {
         return verify_password($password, $this->password);
     }
+    
+    public function generateToken()
+    {
+        $this->token = password_hash($this->id.time(), PASSWORD_BCRYPT);
+        $this->save();
+    }
 
     public function recipes()
     {

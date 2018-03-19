@@ -16,10 +16,6 @@ trait ParsesValidationDSL
 
             [$rulename, $arguments] = $this->parseFunction($rulefunction);
             $ruleClass = $this->toCamelCase($rulename);
-
-            if (empty($value)) {
-                throw new InvalidArgumentException('Invalid Rule Format or Item not Found.');
-            }
         } else {
             $value = $this->payload;
             $ruleClass = $this->toCamelCase($rule);
@@ -81,8 +77,8 @@ trait ParsesValidationDSL
 
     private function item($key)
     {
-        if (is_array($this->payload)) {
-            return $this->payload[$key] ?? null;
+        if (is_array($this->payload) && array_key_exists($key, $this->payload)) {
+            return $this->payload[$key];
         } elseif (
             (is_string($this->payload) || is_numeric($this->payload)) &&
             is_numeric($key) &&

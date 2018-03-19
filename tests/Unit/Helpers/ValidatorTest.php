@@ -187,19 +187,19 @@ class ValidatorTest extends TestSuite
     
     public function test_modifier_chars_with_array()
     {
-        echo 'Validator - DSL: "chars" modifier with array - raise exception';
+        echo 'Validator - DSL: "chars" modifier with array - return null';
 
         $weWillTestYou = ['I', 'am', 'an', 'Array'];
         $camelCasedRuleName = 'RuleName';
 
-        $rule = $this->createMock(AbstractRule::class, [5]);
+        $rule = $this->createMock(AbstractRule::class, [null]);
         $factory = $this->createMock(Factory::class);
 
         $rule->method('apply')
-             ->willReturn(true);
+             ->willReturn(false);
 
         $factory->method('build')
-                ->with($camelCasedRuleName, 5)
+                ->with($camelCasedRuleName, null)
                 ->willReturn($rule);
 
         $validator = new class($factory) extends Validator {
@@ -208,10 +208,8 @@ class ValidatorTest extends TestSuite
                 $this->addRule('chars:rule_name');
             }
         };
-        
-        $this->expectException(InvalidArgumentException::class);
 
-        $validator->validate($weWillTestYou);
+        $this->assertFalse($validator->validate($weWillTestYou));
     }
 
     public function test_modifier_item()
@@ -272,7 +270,7 @@ class ValidatorTest extends TestSuite
     
     public function test_modifier_item_array_non_existent_item()
     {
-        echo 'Validator - DSL: "item(i)" modifier with array - non existent item - raise Exception';
+        echo 'Validator - DSL: "item(i)" modifier with array - non existent item - return null';
 
         $weWillTestYou = ['I', 'Am', 'The', 'Fourth', 'Item'];
         $camelCasedRuleName = 'RuleName';
@@ -281,10 +279,10 @@ class ValidatorTest extends TestSuite
         $factory = $this->createMock(Factory::class);
 
         $rule->method('apply')
-             ->willReturn(true);
+             ->willReturn(false);
 
         $factory->method('build')
-                ->with($camelCasedRuleName, 'Fifth')
+                ->with($camelCasedRuleName, null)
                 ->willReturn($rule);
 
         $validator = new class($factory) extends Validator {
@@ -294,9 +292,7 @@ class ValidatorTest extends TestSuite
             }
         };
         
-        $this->expectException(InvalidArgumentException::class);
-
-        $validator->validate($weWillTestYou);
+        $this->assertFalse($validator->validate($weWillTestYou));
     }
     
     public function test_modifier_item_string()
@@ -355,7 +351,7 @@ class ValidatorTest extends TestSuite
     
     public function test_modifier_item_not_string_or_numeric_or_array()
     {
-        echo 'Validator - DSL: "item(i)" modifier with non-string, non-numeric and non-array - raise exception';
+        echo 'Validator - DSL: "item(i)" modifier with non-string, non-numeric and non-array - return null';
 
         $weWillTestYou = false;
         $camelCasedRuleName = 'RuleName';
@@ -364,7 +360,7 @@ class ValidatorTest extends TestSuite
         $factory = $this->createMock(Factory::class);
 
         $rule->method('apply')
-             ->willReturn(true);
+             ->willReturn(false);
 
         $factory->method('build')
                 ->with($camelCasedRuleName, null)
@@ -377,9 +373,7 @@ class ValidatorTest extends TestSuite
             }
         };
         
-        $this->expectException(InvalidArgumentException::class);
-
-        $validator->validate($weWillTestYou);
+        $this->assertFalse($validator->validate($weWillTestYou));
     }
     
     public function test_modifier_each()
