@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Recipeland\Controllers;
 
-use Recipeland\Controllers\AbstractController as Controller;
-use Psr\Http\Message\ServerRequestInterface as Request;
-use Recipeland\Http\Request\CreateRecipeRequest;
 use Recipeland\Data\Recipe;
+use Recipeland\Http\Request;
+use Recipeland\Http\Request\CreateRecipeRequest;
+use Recipeland\Controllers\AbstractController as Controller;
 
 class Recipes extends Controller
 {
@@ -15,32 +15,15 @@ class Recipes extends Controller
     const QUERY_COLUMNS = ['*'];
     const PAGE_NAME = 'page';
 
-    protected $middleware = [
-        'all' => [
-            'Some\Middleware',
-            'Some\Other\Middleware',
-        ],
-
-        'create' => [
-            'Middlewares\Auth\UserIdentity',
-            'Middlewares\Roles\CreateRecipe',
-        ],
-
-        'update' => [
-            'Middlewares\Roles\CreateRecipe',
-        ],
-    ];
-
     /**
      * @description
      * Lists the recipes
      *
      * @params ServerRequestInterface
-     * @params integer $id
      **/
     public function list(Request $request)
     {
-        $page = $this->getQueryParam('page', 1);
+        $page = $request->getParam('page', 1);
 
         $recipe = Recipe::with('ingredients', 'steps', 'author')
                           ->paginate(
@@ -58,7 +41,6 @@ class Recipes extends Controller
      * Lists the recipes
      *
      * @params ServerRequestInterface
-     * @params integer $id
      **/
     public function create(CreateRecipeRequest $request)
     {

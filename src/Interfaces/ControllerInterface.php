@@ -4,21 +4,15 @@ declare(strict_types=1);
 
 namespace Recipeland\Interfaces;
 
+use Psr\Log\LoggerInterface as Logger;
+
 interface ControllerInterface
 {
-    public function __construct(string $action, array $arguments);
-
-    public function getMiddleware(): array;
-
-    public function getAction(): string;
-
-    public function getArguments(): array;
-
-    public function setQueryParams(array $params): void;
-
-    public function getQueryParam(string $key, $default);
+    public function __construct(string $action, array $arguments, Logger $logger);
 
     public function setStatus(int $code): void;
+    
+    public function setHeader(string $key, string $value): void;
 
     public function setResponseBody(string $body): void;
 

@@ -18,6 +18,7 @@ class ControllerFactory extends Factory
             return $this->container->make($class, [
                 'action' => $arguments[0],
                 'arguments' => $arguments[1] ?? [],
+                'logger' => $this->container->get('log')
             ]);
         } else {
             throw new RuntimeException('Class '.$class.' not Found');
