@@ -57,7 +57,7 @@ return function ($config) {
             DI\get('sender')
         ),
 
-        // Classmap
+        // Router
         Router::class => DI\get('router'),
 
         // Data Sources

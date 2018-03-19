@@ -7,3 +7,4 @@
 .env
 .DS_Store
 .php_cs.cache
+php_cs.cache
