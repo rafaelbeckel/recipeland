@@ -16,7 +16,7 @@ class Min extends AbstractRule
             throw new BadMethodCallException('Min needs exactly 1 argument');
         }
         
-        $min = $this->value;
+        $min = floatval($this->value);
         $value = floatval($arguments[0]);
         
         return $min <= $value;

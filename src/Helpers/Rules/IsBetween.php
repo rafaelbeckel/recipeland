@@ -19,6 +19,6 @@ class IsBetween extends AbstractRule
         $min = floatval($arguments[0]);
         $max = floatval($arguments[1]);
 
-        return $this->value >= $min && $this->value <= $max;
+        return floatval($this->value) >= $min && floatval($this->value) <= $max;
     }
 }

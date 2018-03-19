@@ -16,7 +16,7 @@ class Max extends AbstractRule
             throw new BadMethodCallException('Min needs exactly 1 argument');
         }
 
-        $max = $this->value;
+        $max = floatval($this->value);
         $value = floatval($arguments[0]);
         
         return $max >= $value;

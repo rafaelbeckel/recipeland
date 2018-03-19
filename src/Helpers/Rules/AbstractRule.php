@@ -10,7 +10,7 @@ abstract class AbstractRule implements RuleInterface
 
     protected $value;
 
-    final public function __construct($value)
+    final public function __construct($value = null)
     {
         $this->value = $value;
     }
