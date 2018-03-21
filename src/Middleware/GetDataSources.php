@@ -39,7 +39,7 @@ class GetDataSources implements MiddlewareInterface
 
         try {
             $this->db->getConnection()->getPdo();
-            $request = $request->withAttribute('db', $this->db);
+            $request = $request->withAttribute('db', $this->db->getConnection());
         } catch (\PDOException $e) {
             $this->logger->alert($e->getMessage(), $e->getTrace());
 

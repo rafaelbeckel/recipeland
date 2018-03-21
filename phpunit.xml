@@ -11,11 +11,24 @@
          syntaxCheck="false">
     <testsuites>
         <testsuite name="Application Test Suite">
-            <directory>tests</directory>
+            <directory>./tests</directory>
         </testsuite>
     </testsuites>
     <php>
         <env name="ENVIRONMENT" value="testing"/>
         <env name="DB_CONNECTION" value="pgtest"/>
     </php>
+    <filter>
+        <blacklist>
+            <directory suffix=".php">./vendor</directory>
+        </blacklist>
+        <whitelist>
+            <directory suffix=".php">./src</directory>
+            <directory suffix=".php">./config</directory>
+        </whitelist>
+    </filter>
+    <logging>
+        <log type="coverage-html" target="./public/docs/test_coverage" charset="UTF-8"
+            yui="true" highlight="true" lowUpperBound="50" highLowerBound="80" />
+    </logging>
 </phpunit>

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Recipeland\Controllers;
 
 use Recipeland\Helpers\Factory;
+use RuntimeException;
 
 class ControllerFactory extends Factory
 {
@@ -18,7 +19,7 @@ class ControllerFactory extends Factory
             return $this->container->make($class, [
                 'action' => $arguments[0],
                 'arguments' => $arguments[1] ?? [],
-                'logger' => $this->container->get('log')
+                'logger' => $this->container->make('log')
             ]);
         } else {
             throw new RuntimeException('Class '.$class.' not Found');

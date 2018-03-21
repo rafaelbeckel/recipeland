@@ -30,6 +30,7 @@ class Recipes extends Controller
                     ->get();
         
         if (!$user) {
+            return $this->error('unauthorized');
         }
         
         $user->generateToken();
@@ -44,14 +45,8 @@ class Recipes extends Controller
                                 ->setNotBefore(time())
                                 ->setExpiration(time() + getenv('JWT_EXPIRATION_TIME_IN_SECONDS'))
                                 ->set('user_id', $user->id)
+                                ->set('permissions', $user->roles()->)
                                 ->getToken();
-        
-        $token->getHeaders(); // Retrieves the token headers
-        $token->getClaims(); // Retrieves the token claims
-        
-        echo $token->getHeader('jti'); // will print "4f1g23a12aa"
-        echo $token->getClaim('iss'); // will print "http://example.com"
-        echo $token->getClaim('uid'); // will print "1"
         
         $this->setHeader('Authorization', 'Bearer '.$token);
         $this->setJsonResponse(['status' => 'Authorized']);

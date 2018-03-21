@@ -7,351 +7,583 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 
 class Errors extends Controller
 {
-    public function continue(Request $request)
+    public function continue(Request $request, string $message = null)
     {
         $this->setStatus(100);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function switching_protocols(Request $request)
+    public function switching_protocols(Request $request, string $message = null)
     {
         $this->setStatus(101);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function processing(Request $request)
+    public function processing(Request $request, string $message = null)
     {
         $this->setStatus(102);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function ok(Request $request)
+    public function ok(Request $request, string $message = null)
     {
         $this->setStatus(200);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function created(Request $request)
+    public function created(Request $request, string $message = null)
     {
         $this->setStatus(201);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function accepted(Request $request)
+    public function accepted(Request $request, string $message = null)
     {
         $this->setStatus(202);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function non_authoritative_information(Request $request)
+    public function non_authoritative_information(Request $request, string $message = null)
     {
         $this->setStatus(203);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function no_content(Request $request)
+    public function no_content(Request $request, string $message = null)
     {
         $this->setStatus(204);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function reset_content(Request $request)
+    public function reset_content(Request $request, string $message = null)
     {
         $this->setStatus(205);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function partial_content(Request $request)
+    public function partial_content(Request $request, string $message = null)
     {
         $this->setStatus(206);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function multi_status(Request $request)
+    public function multi_status(Request $request, string $message = null)
     {
         $this->setStatus(207);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function already_reported(Request $request)
+    public function already_reported(Request $request, string $message = null)
     {
         $this->setStatus(208);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function multiple_choices(Request $request)
+    public function multiple_choices(Request $request, string $message = null)
     {
         $this->setStatus(300);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function moved_permanently(Request $request)
+    public function moved_permanently(Request $request, string $message = null)
     {
         $this->setStatus(301);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function found(Request $request)
+    public function found(Request $request, string $message = null)
     {
         $this->setStatus(302);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function see_other(Request $request)
+    public function see_other(Request $request, string $message = null)
     {
         $this->setStatus(303);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function not_modified(Request $request)
+    public function not_modified(Request $request, string $message = null)
     {
         $this->setStatus(304);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function use_proxy(Request $request)
+    public function use_proxy(Request $request, string $message = null)
     {
         $this->setStatus(305);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function switch_proxy(Request $request)
+    public function switch_proxy(Request $request, string $message = null)
     {
         $this->setStatus(306);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function temporary_redirect(Request $request)
+    public function temporary_redirect(Request $request, string $message = null)
     {
         $this->setStatus(307);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function bad_request(Request $request)
+    public function bad_request(Request $request, string $message = null)
     {
         $this->setStatus(400);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function unauthorized(Request $request)
+    public function unauthorized(Request $request, string $message = null)
     {
         $this->setStatus(401);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function payment_required(Request $request)
+    public function payment_required(Request $request, string $message = null)
     {
         $this->setStatus(402);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function forbidden(Request $request)
+    public function forbidden(Request $request, string $message = null)
     {
         $this->setStatus(403);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function not_found(Request $request)
+    public function not_found(Request $request, string $message = null)
     {
         $this->setStatus(404);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function method_not_allowed(Request $request)
+    public function method_not_allowed(Request $request, string $message = null)
     {
         $this->setStatus(405);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function not_acceptable(Request $request)
+    public function not_acceptable(Request $request, string $message = null)
     {
         $this->setStatus(406);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function proxy_authentication_required(Request $request)
+    public function proxy_authentication_required(Request $request, string $message = null)
     {
         $this->setStatus(407);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function request_time_out(Request $request)
+    public function request_time_out(Request $request, string $message = null)
     {
         $this->setStatus(408);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function conflict(Request $request)
+    public function conflict(Request $request, string $message = null)
     {
         $this->setStatus(409);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function gone(Request $request)
+    public function gone(Request $request, string $message = null)
     {
         $this->setStatus(410);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function length_required(Request $request)
+    public function length_required(Request $request, string $message = null)
     {
         $this->setStatus(411);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function precondition_failed(Request $request)
+    public function precondition_failed(Request $request, string $message = null)
     {
         $this->setStatus(412);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function request_entity_too_large(Request $request)
+    public function request_entity_too_large(Request $request, string $message = null)
     {
         $this->setStatus(413);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function request_uri_too_large(Request $request)
+    public function request_uri_too_large(Request $request, string $message = null)
     {
         $this->setStatus(414);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function unsupported_media_type(Request $request)
+    public function unsupported_media_type(Request $request, string $message = null)
     {
         $this->setStatus(415);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function requested_range_not_satisfiable(Request $request)
+    public function requested_range_not_satisfiable(Request $request, string $message = null)
     {
         $this->setStatus(416);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function expectation_failed(Request $request)
+    public function expectation_failed(Request $request, string $message = null)
     {
         $this->setStatus(417);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function im_a_teapot(Request $request)
+    public function im_a_teapot(Request $request, string $message = null)
     {
         $this->setStatus(418);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function unprocessable_entity(Request $request)
+    public function unprocessable_entity(Request $request, string $message = null)
     {
         $this->setStatus(422);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function locked(Request $request)
+    public function locked(Request $request, string $message = null)
     {
         $this->setStatus(423);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function failed_dependency(Request $request)
+    public function failed_dependency(Request $request, string $message = null)
     {
         $this->setStatus(424);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function unordered_collection(Request $request)
+    public function unordered_collection(Request $request, string $message = null)
     {
         $this->setStatus(425);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function upgrade_required(Request $request)
+    public function upgrade_required(Request $request, string $message = null)
     {
         $this->setStatus(426);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function precondition_required(Request $request)
+    public function precondition_required(Request $request, string $message = null)
     {
         $this->setStatus(428);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function too_many_requests(Request $request)
+    public function too_many_requests(Request $request, string $message = null)
     {
         $this->setStatus(429);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function request_header_fields_too_large(Request $request)
+    public function request_header_fields_too_large(Request $request, string $message = null)
     {
         $this->setStatus(431);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function unavailable_for_legal_reasons(Request $request)
+    public function unavailable_for_legal_reasons(Request $request, string $message = null)
     {
         $this->setStatus(451);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function internal_server_error(Request $request)
+    public function internal_server_error(Request $request, string $message = null)
     {
         $this->setStatus(500);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function not_implemented(Request $request)
+    public function not_implemented(Request $request, string $message = null)
     {
         $this->setStatus(501);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function bad_gateway(Request $request)
+    public function bad_gateway(Request $request, string $message = null)
     {
         $this->setStatus(502);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function service_unavailable(Request $request)
+    public function service_unavailable(Request $request, string $message = null)
     {
         $this->setStatus(503);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function gateway_time_out(Request $request)
+    public function gateway_time_out(Request $request, string $message = null)
     {
         $this->setStatus(504);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function http_version_not_supported(Request $request)
+    public function http_version_not_supported(Request $request, string $message = null)
     {
         $this->setStatus(505);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function variant_also_negotiates(Request $request)
+    public function variant_also_negotiates(Request $request, string $message = null)
     {
         $this->setStatus(506);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function insufficient_storage(Request $request)
+    public function insufficient_storage(Request $request, string $message = null)
     {
         $this->setStatus(507);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function loop_detected(Request $request)
+    public function loop_detected(Request $request, string $message = null)
     {
         $this->setStatus(508);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
     
-    public function network_authentication_required(Request $request)
+    public function network_authentication_required(Request $request, string $message = null)
     {
         $this->setStatus(511);
-        $this->setJsonResponse(['error' => $this->response->getReasonPhrase()]);
+        $json = ['error' => $this->response->getReasonPhrase()];
+        if ($message) {
+            $json['message'] = $message;
+        }
+        $this->setJsonResponse($json);
     }
 }

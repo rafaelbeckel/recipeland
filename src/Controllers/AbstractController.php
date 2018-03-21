@@ -31,6 +31,7 @@ abstract class AbstractController implements ControllerInterface, MiddlewareInte
 {
     use ReturnsErrorResponse;
 
+    protected $error;
     protected $logger;
     protected $action;
     protected $response;
@@ -83,25 +84,37 @@ abstract class AbstractController implements ControllerInterface, MiddlewareInte
     final public function process(RequestInterface $request, HandlerInterface $next): ResponseInterface
     {
         $actionName = $this->action;
-        $request    = $this->upgradeRequest($actionName, $request);
-
+        
         try {
+            $request = $this->upgradeRequest($actionName, $request);
             $this->$actionName($request, ...array_values($this->arguments));
+            if ($this->error) {
+                return $this->errorResponse($this->error, $request, $next);
+            }
         } catch (TypeError $e) {
             if ($this->logger) {
                 $this->logger->error($e->getMessage(), $e->getTrace());
             }
-
-            return $this->errorResponse('unauthorized', $request, $next);
+            return $this->errorResponse(
+                'unauthorized',
+                $request,
+                $next,
+                $request->getAttribute('message')
+            );
         } catch (BadMethodCallException $e) {
             if ($this->logger) {
                 $this->logger->error($e->getMessage(), $e->getTrace());
             }
 
-            return $this->errorResponse('not_found', $request, $next);
+            return $this->errorResponse('not_found', $request, $next, $e->getTraceAsString());
         }
 
         return $this->response; // Back to upper middleware layers.
+    }
+    
+    protected function error(string $type): void
+    {
+        $this->error = $type;
     }
 
     /**
@@ -120,6 +133,11 @@ abstract class AbstractController implements ControllerInterface, MiddlewareInte
      * All recipeland Controller actions MUST require a Recipeland Request
      * as its first parameter. If the action needs input validation, it can
      * type-hint a Specialized Request, so only validated objects will pass.
+     *
+     * @param string $actionName
+     * @param Psr\Http\Message\ServerRequestInterface $request
+     *
+     * @returns Recipeland\Interfaces\RequestInterface
      */
     private function upgradeRequest(string $actionName, RequestInterface $request): RecipelandRequest
     {
@@ -141,7 +159,10 @@ abstract class AbstractController implements ControllerInterface, MiddlewareInte
         $firstparam = $action->getParameters()[0] ?? null;
 
         // Action methods MUST require a request interface as first parameter
-        if ($firstparam && $this->isRequest($firstparam->getClass()->getName())) {
+        if ($firstparam &&
+            $firstparam->getClass() &&
+            $this->isRequest($firstparam->getClass()->getName())
+        ) {
             return $firstparam->getClass()->getName();
         } else {
             throw new BadMethodCallException(
