@@ -6,6 +6,8 @@ use GuzzleHttp\Psr7\ServerRequest as Request;
 use Recipeland\Interfaces\FactoryInterface;
 use Recipeland\Interfaces\StackInterface;
 use Psr\Http\Server\MiddlewareInterface;
+use Recipeland\Controllers\Errors;
+use InvalidArgumentException;
 use GuzzleHttp\Psr7\Response;
 use Recipeland\Stack;
 use Tests\TestSuite;
@@ -141,6 +143,36 @@ class StackTest extends TestSuite
 
         $this->f->expects($this->never())
                 ->method('build');
+    }
+    
+    public function test_handle_middleware_without_response()
+    {
+        echo 'Stack: test handle(request) calls Middleware without response';
+
+        $request = new Request('GET', '/');
+        $middleware = $this->createMock(Errors::class);
+
+        $stack = new class($this->f, [Errors::class, null]) extends Stack {
+        };
+                   
+        $this->f->expects($this->once())
+                ->method('build')
+                ->with(Errors::class)
+                ->willReturn($middleware);
+        
+        $response = $stack->handle($request);
+    }
+    
+    public function test_handle_non_middleware_item()
+    {
+        echo 'Stack: test handle(request) calls with wrong item listed';
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $request = new Request('GET', '/');
+        $stack = new class($this->f, ['not_a_middleware']) extends Stack {
+        };
+        $response = $stack->handle($request);
     }
 
     public function test_last()

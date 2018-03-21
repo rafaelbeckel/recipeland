@@ -8,7 +8,7 @@ use BadMethodCallException;
 
 class Min extends AbstractRule
 {
-    protected $message = 'errors.validation.value_must_be_greater_than:$1';
+    protected $message = 'errors.validation.$1_must_be_greater_than_$2';
 
     public function apply(...$arguments): bool
     {
@@ -16,8 +16,10 @@ class Min extends AbstractRule
             throw new BadMethodCallException('Min needs exactly 1 argument');
         }
         
-        $min = floatval($this->value);
-        $value = floatval($arguments[0]);
+        $min = floatval($arguments[0]);
+        $value = floatval($this->value);
+        
+        $this->message = str_replace(['$1','$2'], [$value,$min], $this->message);
         
         return $min <= $value;
     }

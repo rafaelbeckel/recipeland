@@ -12,11 +12,11 @@ abstract class Validator implements ValidatorInterface
 {
     use ParsesValidationDSL;
 
-    protected $rules = [];
+    public $rules = [];
 
     protected $ruleFactory;
 
-    protected $payload;
+    public $payload;
 
     protected $message = '';
 
@@ -76,30 +76,11 @@ abstract class Validator implements ValidatorInterface
         return $this;
     }
 
-    public function validate($payload): bool
+    public function validate($payload, string $scope = null): bool
     {
         $this->payload = $payload;
 
-        foreach ($this->rules as $rule) {
-            [$ruleClass, $value, $arguments] = $this->parseRule($rule);
-
-            if ($value == 'each') {
-                if (!is_iterable($payload) || !$this->each($payload, $rule)) {
-                    return false;
-                }
-            } else {
-                $ruleObject = $this->ruleFactory->build($ruleClass, $value);
-
-                // Apply the current rule
-                if (!call_user_func_array([$ruleObject, 'apply'], $arguments)) {
-                    $this->message = $ruleObject->getMessage();
-
-                    return false;
-                }
-            }
-        }
-
-        return true;
+        return $this->applyRules($payload, $this->rules, $scope);
     }
 
     public function getMessage(): string

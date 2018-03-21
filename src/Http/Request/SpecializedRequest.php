@@ -3,6 +3,7 @@
 namespace Recipeland\Http\Request;
 
 use Recipeland\Http\Request;
+use InvalidArgumentException;
 use Recipeland\Helpers\Rules\RuleFactory;
 use Recipeland\Helpers\Validators\RequestValidator;
 use Recipeland\Traits\ImplementsSpecializedRequest;
@@ -12,20 +13,36 @@ use Psr\Http\Message\ServerRequestInterface as ServerRequest;
 
 abstract class SpecializedRequest extends Request implements SpecializedRequestInterface
 {
-    protected $valid = false;
     protected $validator;
+    
+    protected $data;
     
     abstract public function addRules();
     
     public function addRule($rule)
     {
-        $this->validator = $this->getValidator();
-        $this->validator->addRule($rule);
+        $scope = strtok($rule, ':');
+        
+        if (array_key_exists($scope, $this->data)) {
+            $this->validator = $this->getValidator();
+            $this->validator->addRule($rule);
+        } else {
+            throw new InvalidArgumentException(
+                'Rule "'.$rule.'" does not contain a valid scope for validating a Request.'
+            );
+        }
     }
     
     public function validate(): bool
     {
-        return $this->getValidator()->validate($this->getQueryParams());
+        $this->validator = $this->getValidator();
+        
+        foreach ($this->data as $key => $value) {
+            if (! $this->validator->validate($value, $key)) {
+                return false;
+            }
+        }
+        return true;
     }
     
     public function getValidator()
@@ -41,7 +58,10 @@ abstract class SpecializedRequest extends Request implements SpecializedRequestI
         if ($specialized->validate()) {
             return $specialized;
         } else {
-            return $request;
+            return $request->withAttribute(
+                'message',
+                $specialized->getValidator()->getMessage()
+            );
         }
     }
 }

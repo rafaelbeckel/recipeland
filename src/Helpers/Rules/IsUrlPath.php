@@ -16,6 +16,6 @@ class IsUrlPath extends AbstractRule
 
     public function apply(...$arguments): bool
     {
-        return (bool) preg_match($this->pattern, $this->value);
+        return (bool) preg_match($this->pattern, (string) $this->value);
     }
 }

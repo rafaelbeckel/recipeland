@@ -46,8 +46,52 @@ class ApiTest extends TestSuite
         'total' => 2,
     ];
     
+    protected $newRecipe = '{
+        "recipe" : {
+            "author" : "luigi",
+            "name" : "My Most delicious Recipe!",
+            "subtitle" : "My subtitle",
+            "description" : "My description",
+            "prep_time" : 10,
+            "total_time" : 20,
+            "vegetarian" : 1,
+            "difficulty" : 3,
+            "picture" : "https://example.com/picture.jpg",
+            "ingredients" : [
+                {
+                    "slug" : "my_ingredient",
+                    "quantity" : "12",
+                    "units" : "mg",
+                    "name" : "My Ingredient",
+                    "picture" : "https://example.com/picture.jpg",
+                    "allergens" : "milk"
+                },
+                {
+                    "slug" : "my_second_ingredient",
+                    "quantity" : "10",
+                    "units" : "ml",
+                    "name" : "My Second Ingredient",
+                    "picture" : "https://example.com/picture.jpg",
+                    "allergens" : "none"
+                }
+            ],
+            "steps" : [
+                {
+                    "description" : "Put ingredient somewhere",
+                    "picture" : "https://example.com/picture.jpg",
+                    "order" : 1
+                },
+                {
+                    "description" : "Eat Ingredient",
+                    "picture" : "https://example.com/picture.jpg",
+                    "order" : 2
+                }
+            ]
+        }
+    }';
+    
     /**
-     * Destroy and recreate the database for every test 
+     * Destroy and recreate the database for every test
      **/
     public function setUp()
     {
@@ -81,7 +125,7 @@ class ApiTest extends TestSuite
     {
         echo 'API test: GET /recipes returns a list of recipes';
 
-        $response = $this->request('/recipes');
+        $response = $this->request('GET', '/recipes');
         $this->assertHeaders($response);
         $responseArray = $this->jsonToArray($response);
         $this->assertEquals($this->expected, $responseArray);
@@ -90,35 +134,39 @@ class ApiTest extends TestSuite
     public function test_create_recipe()
     {
         echo 'API test: POST /recipes and create a new recipe';
-
-        $this->markTestIncomplete('Auth not implemented yet.');
-    }
-
-    public function test_create_recipes()
-    {
-        echo 'API test: POST /recipes and create multiple recipes';
-
-        $this->markTestIncomplete('Auth not implemented yet.');
+        
+        $header = [
+            'authorization' => 'Bearer abc.def.ghi'
+        ];
+        
+        $response = $this->request('POST', '/recipes', $this->newRecipe, $header);
+        $responseArray = $this->jsonToArray($response);
+        $this->assertHeaders($response);
+        
+        $input = json_decode($this->newRecipe);
+        $recipe = Recipe::find(3); //new Recipe will have ID 3
+        
+        $this->assertEquals($input->recipe->name, $recipe->name);
     }
 
     public function test_get_recipe_1()
     {
         echo 'API test: GET /recipes/1 and get the given recipe';
 
-        $response = $this->request('/recipes/1');
-        $this->assertHeaders($response);
+        $response = $this->request('GET', '/recipes/1');
         $responseArray = $this->jsonToArray($response);
         $this->assertEquals($this->expected['data'][0], $responseArray);
+        $this->assertHeaders($response);
     }
     
     public function test_get_recipe_2()
     {
         echo 'API test: GET /recipes/2 and get the given recipe';
 
-        $response = $this->request('/recipes/2');
-        $this->assertHeaders($response);
+        $response = $this->request('GET', '/recipes/2');
         $responseArray = $this->jsonToArray($response);
         $this->assertEquals($this->expected['data'][1], $responseArray);
+        $this->assertHeaders($response);
     }
     
     public function test_edit_recipe()
@@ -138,7 +186,9 @@ class ApiTest extends TestSuite
     public function test_delete_recipe()
     {
         echo 'API test: DELETE /recipes/{id} and remove the given recipe';
-
+        
+        
+        
         $this->markTestIncomplete('Auth not implemented yet.');
     }
 
@@ -153,20 +203,20 @@ class ApiTest extends TestSuite
     {
         echo 'API test: GET /recipes/non/existent/route and receive 404 - Not Found';
 
-        $response = $this->request('/recipes/non/existent/route');
-        $this->assertHeaders($response, 404);
+        $response = $this->request('GET', '/recipes/non/existent/route');
         $responseArray = $this->jsonToArray($response);
         $this->assertEquals(['error' => 'Not Found'], $responseArray);
+        $this->assertHeaders($response, 404);
     }
 
     public function test_405()
     {
         echo 'API test: GET /recipes/{id}/rating and receive 405 - Method Not Allowed';
 
-        $response = $this->request('/recipes/1/rating');
-        $this->assertHeaders($response, 405);
+        $response = $this->request('GET', '/recipes/1/rating');
         $responseArray = $this->jsonToArray($response);
         $this->assertEquals(['error' => 'Method Not Allowed'], $responseArray);
+        $this->assertHeaders($response, 405);
     }
     
     
@@ -174,9 +224,9 @@ class ApiTest extends TestSuite
     /***********************************************************************
      *                       API HELPER METHODS                            *
      ***********************************************************************/
-    public function request(string $path, string $method='GET', string $scheme='https'): ResponseInterface
+    public function request(string $method, string $path, string $body = null, array $headers = []): ResponseInterface
     {
-        $request = (new Request($method, $this->url.$path))->withHeader('x-forwarded-proto', $scheme);
+        $request = (new Request($method, $this->url.$path, $headers, $body))->withHeader('x-forwarded-proto', 'https');
         $app = $this->container->get(App::class);
         
         return $app->go($request);
@@ -199,7 +249,7 @@ class ApiTest extends TestSuite
      ***********************************************************************/
     private function database($command, $what=null)
     {
-        if(getenv('ENVIRONMENT') == 'testing' && 
+        if (getenv('ENVIRONMENT') == 'testing' &&
            getenv('DB_CONNECTION') == 'pgtest') {
             $phinx = new PhinxApplication();
             $wrapper = new TextWrapper($phinx);
@@ -207,8 +257,7 @@ class ApiTest extends TestSuite
             $wrapper->setOption('environment', 'testing');
             $wrapper->setOption('parser', 'PHP');
             
-            switch ($command)
-            {
+            switch ($command) {
                 case 'migrate':
                     $wrapper->getMigrate();
                     break;
@@ -296,5 +345,4 @@ class ApiTest extends TestSuite
             ]
         );
     }
-
 }

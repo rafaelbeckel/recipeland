@@ -2,20 +2,68 @@
 
 namespace Recipeland\Traits;
 
+use BadMethodCallException;
 use InvalidArgumentException;
 use Recipeland\Helpers\Validator;
 
 trait ParsesValidationDSL
 {
+    public function __call($method, $parameters)
+    {
+        throw new BadMethodCallException('Modifier ['.$method.'] does not exist.');
+    }
+    
+    private function applyRules($payload, $rules, string $scope = null):bool
+    {
+        foreach ($rules as $rule) {
+            if ($scope) {
+                if (strpos($rule, $scope.':') !== false) {
+                    $rule = str_replace($scope.':', '', $rule);
+                } else {
+                    continue;
+                }
+            }
+            
+            [$ruleName, $value, $arguments] = $this->parseRule($rule);
+            
+            if ($value == 'each') {
+                $rule = substr($rule, 5); // without 'each:'
+                if (!is_iterable($payload) || !$this->each($payload, $rule)) {
+                    return false;
+                }
+            } elseif (strpos($ruleName, ':')) { // "value" is a item(n)
+                if (!$this->each([$value], $ruleName)) {
+                    return false;
+                }
+            } else {
+                $ruleObject = $this->ruleFactory->build($ruleName, $value);
+
+                // Apply the current rule
+                if (!call_user_func_array([$ruleObject, 'apply'], $arguments)) {
+                    $this->message = $ruleObject->getMessage();
+
+                    return false;
+                }
+            }
+        }
+        
+        return true;
+    }
+    
     private function parseRule(string $rule): array
     {
         if (strpos($rule, ':')) {
             [$modifier, $rulefunction] = explode(':', $rule, 2);
 
-            $value = $this->runModifier($modifier, $rulefunction);
+            $value = $this->runModifier($modifier);
 
             [$rulename, $arguments] = $this->parseFunction($rulefunction);
-            $ruleClass = $this->toCamelCase($rulename);
+            
+            if (strpos($rulename, ':')) {
+                $ruleClass = $rulefunction;
+            } else {
+                $ruleClass = $this->toCamelCase($rulename);
+            }
         } else {
             $value = $this->payload;
             $ruleClass = $this->toCamelCase($rule);
@@ -25,10 +73,10 @@ trait ParsesValidationDSL
         return [$ruleClass, $value, $arguments];
     }
 
-    private function runModifier(string $modifier, string $rulefunction)
+    private function runModifier(string $modifier)
     {
         [$method, $params] = $this->parseFunction($modifier);
-
+        
         if ($method == 'each') {
             return $method;
         } elseif (method_exists($this, $method)) {
@@ -44,9 +92,10 @@ trait ParsesValidationDSL
             $validator = new class($this->ruleFactory) extends Validator {
             };
 
-            $validator->addRule(substr($rule, 5)); // Without "each:"
+            $validator->addRule($rule);
 
             if (!$validator->validate($value)) {
+                $this->message = $validator->getMessage();
                 return false;
             }
         }
@@ -77,7 +126,7 @@ trait ParsesValidationDSL
 
     private function item($key)
     {
-        if (is_array($this->payload) && array_key_exists($key, $this->payload)) {
+        if (is_array($this->payload) && !empty($this->payload[$key])) {
             return $this->payload[$key];
         } elseif (
             (is_string($this->payload) || is_numeric($this->payload)) &&

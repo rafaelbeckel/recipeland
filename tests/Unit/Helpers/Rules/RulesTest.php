@@ -7,16 +7,36 @@ use Recipeland\Helpers\Rules\IsHttpMethod;
 use Recipeland\Helpers\Rules\IsBetween;
 use Recipeland\Helpers\Rules\IsPattern;
 use Recipeland\Helpers\Rules\IsUrlPath;
+use Recipeland\Helpers\Rules\IsNumeric;
 use Recipeland\Helpers\Rules\NotEmpty;
+use Recipeland\Helpers\Rules\Compare;
 use Recipeland\Helpers\Rules\IsArray;
 use Recipeland\Helpers\Rules\Equals;
 use Recipeland\Helpers\Rules\IsType;
+use Recipeland\Helpers\Rules\IsJwt;
+use Recipeland\Helpers\Rules\IsUrl;
 use Recipeland\Helpers\Rules\Min;
 use Recipeland\Helpers\Rules\Max;
 use Tests\TestSuite;
 
 class RulesTest extends TestSuite
 {
+    public function test_rule_compare()
+    {
+        echo 'Rule: compare';
+
+        $equals = new Compare(['key1'=>'1', 'key2'=>2]);
+
+        $this->assertTrue($equals->apply('key1', '<', 'key2'));
+        $this->assertFalse($equals->apply('key1', '>', 'key2'));
+        $this->assertTrue($equals->apply('key1', '<=', 'key2'));
+        $this->assertFalse($equals->apply('key1', '>=', 'key2'));
+        $this->assertFalse($equals->apply('key1', '==', 'key2'));
+        $this->assertTrue($equals->apply('key1', '!=', 'key2'));
+        $this->assertTrue($equals->apply('key1', '!==', 'key2'));
+        $this->assertFalse($equals->apply('key1', '===', 'key2'));
+    }
+    
     public function test_rule_equals()
     {
         echo 'Rule: equals';
@@ -58,9 +78,9 @@ class RulesTest extends TestSuite
 
         $min = new Min(5);
 
-        $this->assertTrue($min->apply(5));
-        $this->assertTrue($min->apply(6));
-        $this->assertFalse($min->apply(4));
+        $this->assertTrue($min->apply(5));  // min. 5
+        $this->assertTrue($min->apply(4));  // min. 4
+        $this->assertFalse($min->apply(6)); // min. 6
     }
     
     public function test_rule_max()
@@ -69,9 +89,9 @@ class RulesTest extends TestSuite
 
         $max = new Max(5);
 
-        $this->assertTrue($max->apply(5));
-        $this->assertTrue($max->apply(4));
-        $this->assertFalse($max->apply(6));
+        $this->assertTrue($max->apply(5));  // max. 5
+        $this->assertTrue($max->apply(6));  // max. 6
+        $this->assertFalse($max->apply(4)); // max. 4
     }
 
     public function test_rule_is_http_method()
@@ -129,6 +149,17 @@ class RulesTest extends TestSuite
         $this->assertTrue($instanceof->apply(TestSuite::class));
         $this->assertFalse($instanceof->apply(IsInstanceOf::class));
     }
+    
+    public function test_rule_is_numeric()
+    {
+        echo 'Rule: is_numeric';
+
+        $numeric = new IsNumeric('123');
+        $notumeric = new IsNumeric('abc');
+
+        $this->assertTrue($numeric->apply());
+        $this->assertFalse($notumeric->apply());
+    }
 
     public function test_rule_is_url_path()
     {
@@ -139,6 +170,30 @@ class RulesTest extends TestSuite
 
         $this->assertTrue($isurlpath->apply());
         $this->assertFalse($noturlpath->apply());
+    }
+    
+    public function test_rule_is_jwt()
+    {
+        echo 'Rule: is_jwt';
+
+        $isJwt = new IsJwt('Bearer iam.valid.jwt');
+        $notJwt = new IsJwt('not. valid . jwt');
+
+        $this->assertTrue($isJwt->apply());
+        $this->assertFalse($notJwt->apply());
+    }
+    
+    public function test_rule_is_url()
+    {
+        echo 'Rule: is_url';
+
+        $isUrl = new IsUrl('http://example.com');
+        $isUrl2 = new IsUrl('https://example.com/i/am/4/url/path?that=accepts&some=vars');
+        $notUrl = new IsUrl('not. valid . url');
+
+        $this->assertTrue($isUrl->apply());
+        $this->assertTrue($isUrl2->apply());
+        $this->assertFalse($notUrl->apply());
     }
 
     public function test_rule_not_empty()

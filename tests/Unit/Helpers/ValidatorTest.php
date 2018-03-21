@@ -5,7 +5,8 @@ namespace Tests\Unit\Helpers;
 use Recipeland\Helpers\Rules\AbstractRule;
 use Recipeland\Helpers\Validator;
 use Recipeland\Helpers\Factory;
-use \InvalidArgumentException;
+use InvalidArgumentException;
+use BadMethodCallException;
 use Tests\TestSuite;
 
 class ValidatorTest extends TestSuite
@@ -71,6 +72,60 @@ class ValidatorTest extends TestSuite
 
         $this->assertFalse($validator->validate($weWillTestYou));
         $this->assertEquals($validator->getMessage(), 'You are False!');
+    }
+    
+    public function test_call_malformed_rule()
+    {
+        echo 'Validator - DSL: malformed rule - throws Exception';
+
+        $factory = $this->createMock(Factory::class);
+
+        $validator = new class($factory) extends Validator {
+            protected function init(): void
+            {
+                $this->addRule('rule_name(:malformed');
+            }
+        };
+        
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->assertTrue($validator->validate('foo'));
+    }
+    
+    public function test_call_malformed_modifier()
+    {
+        echo 'Validator - DSL: malformed modifier - throws Exception';
+
+        $factory = $this->createMock(Factory::class);
+
+        $validator = new class($factory) extends Validator {
+            protected function init(): void
+            {
+                $this->addRule('non_existent_modifier:foo');
+            }
+        };
+        
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->assertTrue($validator->validate('foo'));
+    }
+    
+    public function test_call_invalid_modifier_directly()
+    {
+        echo 'Validator - DSL: directly call invalid method - throws Exception';
+
+        $factory = $this->createMock(Factory::class);
+
+        $validator = new class($factory) extends Validator {
+            protected function init(): void
+            {
+                $this->addRule('non_existent_modifier:foo');
+            }
+        };
+        
+        $this->expectException(BadMethodCallException::class);
+
+        $validator->some_method('foo');
     }
 
     public function test_modifier_count()

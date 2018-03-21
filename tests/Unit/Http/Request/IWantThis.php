@@ -10,6 +10,6 @@ class IWantThis extends SpecializedRequest
 {
     public function addRules(): void
     {
-        $this->addRule('item(foo):not_empty');
+        $this->addRule('body:item(foo):not_empty');
     }
 }
