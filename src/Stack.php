@@ -80,13 +80,7 @@ abstract class Stack implements StackInterface, HandlerInterface
     public function handle(RequestInterface $request): ResponseInterface
     {
         $current = $this->getCurrentItem();
-
-        if ($current === false) { // Last item
-            return new Response();
-        }
-
         $middleware = $this->getInstanceOf($current);
-
         $this->movePointerToNextItem();
 
         return $middleware->process($request, $this);

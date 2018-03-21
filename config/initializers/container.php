@@ -23,23 +23,27 @@ return function ($config) {
 
     $builder->addDefinitions([
         // Aliases
-        'config' => $config->getRepository(),
-        'scream' => $config->getInitializer('log.error'),
+        'config' => $config,
         'sender' => DI\create(Sender::class),
-        'cache' => $config->getInitializer('cache'),
-        'log' => $config->getInitializer('log.access'),
-        'db' => $config->getInitializer('db'),
+        'log.access' => $config->getInitializer(),
+        'log.error' => $config->getInitializer(),
+        'cache' => $config->getInitializer(),
+        'db' => $config->getInitializer(),
+        'scream' => DI\get('log.error'),
+        'log' => DI\get('log.access'),
 
         // Static Aliases needed by ACL package
-        'facades' => function (Container $c) use ($config) {
+        'facades' => function (Container $c) {
+            $config = $c->get('config');
             return $config->setFacades([
-                'config' => $c->get('config'),
+                'config' => $c->get('config')->getRepository(),
                 'cache' => $c->get('cache'),
             ]);
         },
 
         // Router
-        'router' => function (Container $c) use ($config) {
+        'router' => function (Container $c) {
+            $config = $c->get('config');
             return $config->runInitializer('router', $c);
         },
 

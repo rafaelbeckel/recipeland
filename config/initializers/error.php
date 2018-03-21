@@ -16,6 +16,9 @@ return function ($config, ScreamInterface $logger) {
             header('Content-type: application/json;charset=utf-8');
             echo $config->get('error.default_message');
 
+            echo $e->getMessage();
+            echo $e->getTraceAsString();
+
             $logger->emergency($e->getMessage(), $e->getTrace());
         });
     }

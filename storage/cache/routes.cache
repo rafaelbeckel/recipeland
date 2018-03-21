@@ -8,6 +8,7 @@
     'POST' => 
     array (
       '/recipes' => 'Recipes.create',
+      '/auth/login' => 'Auth.login',
     ),
   ),
   1 => 

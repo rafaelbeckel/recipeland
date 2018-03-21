@@ -9,9 +9,10 @@ use Psr\Http\Server\RequestHandlerInterface as HandlerInterface;
 
 trait ReturnsErrorResponse
 {
-    protected function errorResponse(string $error, RequestInterface $request, HandlerInterface $next): ResponseInterface
+    protected function errorResponse(string $error, RequestInterface $request, HandlerInterface $next, string $message = null): ResponseInterface
     {
-        $errorController = new Errors($error);
+        $argument = $message ? ['message' => $message] : [];
+        $errorController = new Errors($error, $argument);
     
         return $errorController->process($request, $next);
     }

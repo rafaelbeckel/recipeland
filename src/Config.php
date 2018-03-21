@@ -8,6 +8,8 @@ use Dotenv\Dotenv;
 use InvalidArgumentException;
 use Illuminate\Config\Repository;
 use Illuminate\Support\Facades\Facade;
+use DI\Factory\RequestedEntry as Entry;
+use Psr\Container\ContainerInterface as Container;
 use Illuminate\Contracts\Config\Repository as RepositoryInterface;
 
 class Config
@@ -34,24 +36,23 @@ class Config
         return $this->repository->get($key);
     }
 
-    public function getInitializer(string $key, ...$parameters): callable
+    public function getInitializer(string $key = null): callable
     {
-        return function () use ($key, $parameters) {
-            $initializer = $this->get('initializers.'.$key);
-
-            if ($parameters) {
-                return $initializer($this, ...$parameters);
-            } else {
-                return $initializer($this);
-            }
-        };
+        if ($key) {
+            return $this->get('initializers.'.$key);
+        } else {
+            return function (Container $c, Entry $entry) {
+                $config = $c->get('config');
+                $initializer = $config->get('initializers.'.$entry->getName());
+                return $initializer($config);
+            };
+        }
     }
 
     public function runInitializer(string $key, ...$parameters)
     {
-        $initializer = $this->getInitializer($key, ...$parameters);
-        $object = $initializer();
-        
+        $initializer = $this->getInitializer($key, true);
+        $object = $initializer($this, ...$parameters);
         return $object;
     }
 

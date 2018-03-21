@@ -13,7 +13,7 @@ return [
     'prefix' => 'recipeland:',
 
     'files' => [
-        'dep_inversion' => __DIR__.'/../storage/cache/di.cache',
+        'dep_inversion' => __DIR__.'/../storage/cache',
         'routes' => __DIR__.'/../storage/cache/routes.cache',
     ],
 ];
