@@ -39,7 +39,8 @@
     "require-dev": {
         "phpunit/phpunit": "dev-issue-3031_fix_based_on_7.0.2",
         "friendsofphp/php-cs-fixer": "^2.10",
-        "vicebas/php-docblock-generator": "^1.0"
+        "vicebas/php-docblock-generator": "^1.0",
+        "phpunit/php-code-coverage": "^6.0"
     },
     "repositories": [
         {
