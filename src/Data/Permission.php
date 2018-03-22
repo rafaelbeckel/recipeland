@@ -8,6 +8,8 @@ class Permission extends EntrustPermission
 {
     protected $fillable = ['name', 'display_name', 'description'];
     
+    protected $touches = ['roles'];
+    
     public function attachRole($role)
     {
         if (is_object($role)) {

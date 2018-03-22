@@ -14,7 +14,7 @@ class User extends Model
     protected $fillable = ['name', 'username', 'password', 'email'];
 
     protected $hidden = ['password', 'token', 'deleted_at', 'email', 'username'];
-
+    
     use EntrustUserTrait, SoftDeletes {
         SoftDeletes::restore as sfRestore;
         EntrustUserTrait::restore as euRestore;
@@ -34,15 +34,9 @@ class User extends Model
 
     public function verifyPassword(string $password): bool
     {
-        return verify_password($password, $this->password);
+        return password_verify($password, $this->password);
     }
     
-    public function generateToken()
-    {
-        $this->token = password_hash($this->id.time(), PASSWORD_BCRYPT);
-        $this->save();
-    }
-
     public function recipes()
     {
         return $this->hasMany('Recipeland\Data\Recipe', 'created_by');

@@ -18,7 +18,7 @@ class Routes
         $this->add( 'DELETE', '/recipes/{id}',        'Recipes.delete'      );
         $this->add( 'POST',   '/recipes/{id}/rating', 'Recipes.rate'        );
         
-        $this->add( 'POST',   '/auth/login',          'Auth.login'          );
+        $this->add( 'POST',   '/auth/login',          'Auth\Users.login'    );
     }
     
     public function add($method, $path, $destination)

@@ -80,6 +80,11 @@ abstract class AbstractController implements ControllerInterface, MiddlewareInte
 
         $this->setResponseBody(json_encode($json));
     }
+    
+    protected function error(string $type): void
+    {
+        $this->error = $type;
+    }
 
     final public function process(RequestInterface $request, HandlerInterface $next): ResponseInterface
     {
@@ -105,16 +110,16 @@ abstract class AbstractController implements ControllerInterface, MiddlewareInte
             if ($this->logger) {
                 $this->logger->error($e->getMessage(), $e->getTrace());
             }
+            
+            $message = 'Resource not found';
+            if (getenv('ENVIRONMENT') == 'development') {
+                $message = $e->getMessage().' '.$e->getTraceAsString();
+            }
 
-            return $this->errorResponse('not_found', $request, $next, $e->getTraceAsString());
+            return $this->errorResponse('not_found', $request, $next, $message);
         }
 
         return $this->response; // Back to upper middleware layers.
-    }
-    
-    protected function error(string $type): void
-    {
-        $this->error = $type;
     }
 
     /**

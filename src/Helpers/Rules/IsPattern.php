@@ -10,6 +10,7 @@ class IsPattern extends AbstractRule
 
     public function apply(...$arguments): bool
     {
-        return (bool) preg_match($arguments[0], (string) $this->value);
+        $pattern = isset($arguments[1]) ? implode(',', $arguments) : $arguments[0];
+        return (bool) preg_match($pattern, (string) $this->value);
     }
 }

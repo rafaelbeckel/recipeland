@@ -74,6 +74,7 @@ return function ($config) {
     ]);
 
     $container = $builder->build();
+    $container->get('facades');
 
     return $container;
 };

@@ -1,7 +1,5 @@
 <?php
 
-error_reporting(E_ALL);
-
 use Recipeland\Data\User;
 use Recipeland\Data\Role;
 use Phinx\Seed\AbstractSeed;
@@ -24,7 +22,6 @@ class AclSeeder extends AbstractSeed
         $container = require __DIR__.'/../../bootstrap/Config.php';
 
         $container->get('db');
-        $container->get('facades');
 
         // Roles
         $chef = Role::firstOrCreate(

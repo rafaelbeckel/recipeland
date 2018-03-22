@@ -9,9 +9,16 @@ class Role extends EntrustRole
 {
     protected $fillable = ['name', 'display_name', 'description'];
     
+    protected $touches = ['users'];
+    
     public function permissions()
     {
         return $this->perms();
+    }
+    
+    public function users()
+    {
+        return $this->belongsToMany('Recipeland\Data\User');
     }
     
     public function attachPermission($permission)

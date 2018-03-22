@@ -28,8 +28,14 @@ use Symfony\Component\Console\Output\StreamOutput;
  */
 class ApiTest extends TestSuite
 {
+    const JWT_PATTERN = '|^(Bearer\s)([A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+\/=]*[^\.]+)$|';
+    
     protected $container;
     protected $url;
+    
+    protected $homer_token;
+    protected $luigi_token;
+    protected $burns_token;
     
     protected $expected = [
         'current_page' => 1,
@@ -129,6 +135,35 @@ class ApiTest extends TestSuite
         $this->assertHeaders($response);
         $responseArray = $this->jsonToArray($response);
         $this->assertEquals($this->expected, $responseArray);
+    }
+    
+    public function test_login()
+    {
+        echo 'API test: POST /login and receive a JWT';
+        
+        $body = '{
+            "username" : "luigi",
+            "password" : "Pasta1234!"
+        }';
+        
+        $response = $this->request('POST', '/auth/login', $body);
+        $this->assertEquals('{"status":"Authorized"}', (string) $response->getBody());
+        $this->assertRegExp(self::JWT_PATTERN, $response->getHeader('authorization')[0]);
+        $this->assertHeaders($response);
+    }
+    
+    public function test_login_wrong_password()
+    {
+        echo 'API test: POST /login with wrong password and receive 401';
+        
+        $body = '{
+            "username" : "luigi",
+            "password" : "Pasta123!"
+        }';
+        
+        $response = $this->request('POST', '/auth/login', $body);
+        $this->assertEquals('{"error":"Unauthorized"}', (string) $response->getBody());
+        $this->assertHeaders($response, 401);
     }
 
     public function test_create_recipe()
