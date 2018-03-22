@@ -7,8 +7,8 @@ namespace Recipeland\Controllers\Auth;
 use Recipeland\Data\User;
 use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Signer\Keychain;
+use Lcobucci\JWT\Signer\Rsa\Sha512;
 use Recipeland\Http\Request\LoginRequest;
-use Lcobucci\JWT\Signer\Rsa\Sha512 as RsaSha512;
 use Recipeland\Controllers\AbstractController as Controller;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -37,50 +37,36 @@ class Users extends Controller
         $roles = [];
         $permissions = [];
         foreach ($user->roles as $role) {
-            $roles[$role->name] = $role->display_name;
+            $roles[$role->name] = 1;
             foreach ($role->permissions as $permission) {
-                $permissions[$permission->name] = $permission->display_name;
+                $permissions[$permission->name] = 1;
             }
         }
         
         $user->updated_at = date("Y-m-d H:i:s");
         
-        $signer = new RsaSha512();
+        $signer = new Sha512();
         $keychain = new Keychain();
-        $user->token = (new Builder())->setIssuer(getenv('JWT_ISSUER'))
-                                      ->setAudience(getenv('JWT_AUDIENCE'))
-                                      ->setId($user->username.' '.$user->updated_at)
-                                      ->setIssuedAt(time())
-                                      ->setNotBefore(time())
-                                      ->setExpiration(time()+getenv('JWT_EXPIRATION_TIME'))
-                                      ->set('user_id', $user->id)
-                                      ->set('username', $user->username)
-                                      ->set('permissions', $permissions)
-                                      ->set('roles', $roles)
-                                      ->sign(
-                                          $signer, 
-                                          $keychain->getPrivateKey(
-                                              'file://'.BASE_DIR.getenv('PRIVATE_KEY')
-                                          ))
-                                      ->getToken();
-         
-        // Disable autosaving timestamps
-        $user->timestamps = false;
-        $user->save();
-        $user->timestamps = true;
+        $token = (new Builder())->setIssuer(getenv('JWT_ISSUER'))
+                                ->setAudience(getenv('JWT_AUDIENCE'))
+                                ->setId($user->username.' '.$user->updated_at)
+                                ->setIssuedAt(time())
+                                ->setNotBefore(time())
+                                ->setExpiration(time()+getenv('JWT_EXPIRATION_TIME'))
+                                ->set('user_id', $user->id)
+                                ->set('permissions', $permissions)
+                                ->set('roles', $roles)
+                                ->sign(
+                                    $signer, 
+                                    $keychain->getPrivateKey(
+                                        'file://'.BASE_DIR.getenv('PRIVATE_KEY')
+                                    ))
+                                ->getToken();
         
-        $this->setHeader('Authorization', 'Bearer '.$user->token);
+        $user->timestamps = false; // Disable autosaving timestamps
+        $user->save();
+        
+        $this->setHeader('Authorization', 'Bearer '.$token);
         $this->setJsonResponse(['status' => 'Authorized']);
-    }
-
-    /**
-     * @description
-     * Create a new user
-     *
-     * @params ServerRequestInterface
-     **/
-    public function register(NewUserRequest $request)
-    {
-        // Create a new user here
     }
 }

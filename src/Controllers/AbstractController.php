@@ -110,13 +110,8 @@ abstract class AbstractController implements ControllerInterface, MiddlewareInte
             if ($this->logger) {
                 $this->logger->error($e->getMessage(), $e->getTrace());
             }
-            
-            $message = 'Resource not found';
-            if (getenv('ENVIRONMENT') == 'development') {
-                $message = $e->getMessage().' '.$e->getTraceAsString();
-            }
 
-            return $this->errorResponse('not_found', $request, $next, $message);
+            return $this->errorResponse('not_found', $request, $next);
         }
 
         return $this->response; // Back to upper middleware layers.

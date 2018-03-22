@@ -35,7 +35,6 @@ class CreateUsersTable extends AbstractMigration
               ->addColumn('username', 'string')
               ->addColumn('password', 'string')
               ->addColumn('name', 'string')
-              ->addColumn('token', 'text', ['null' => true])
               ->addColumn('created_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
               ->addColumn('updated_at', 'timestamp', ['null' => true])
               ->addColumn('deleted_at', 'timestamp', ['null' => true])
