@@ -169,8 +169,8 @@ cook() {
             echo "We use a self-signed SSL certificate, and it won't be accepted on most clients."
             echo "You need to tell your browser or API client to accept it. Look at README for instructions."
             echo ""
-            echo "If you get a 504 Error from nginx, just reload the page a few times until the service starts."
-            echo "Migrations can take a while. PHP-FPM won't start listening until they are all finished." 
+            echo "Migrations can take a while. PHP-FPM won't start listening until they are all finished. So, if" 
+            echo "you get a 504 Error from nginx, just reload the page a few times until the service starts."
             echo "You can make startup faster by reducing the number of generated recipes in .env file."
         fi
 
