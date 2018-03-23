@@ -3,9 +3,12 @@
 namespace Recipeland\Data;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Recipe extends Model
 {
+    use SoftDeletes;
+    
     protected $fillable = ['name', 'created_by', 'subtitle', 'description', 'prep_time', 'total_time', 'vegetarian', 'picture', 'difficulty'];
     
     protected $hidden = ['published', 'deleted_at'];

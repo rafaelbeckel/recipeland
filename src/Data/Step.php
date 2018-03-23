@@ -3,9 +3,12 @@
 namespace Recipeland\Data;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Step extends Model
 {
+    use SoftDeletes;
+    
     protected $fillable = ['description', 'picture'];
     
     public function recipes()
