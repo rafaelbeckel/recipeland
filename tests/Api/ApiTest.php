@@ -30,12 +30,9 @@ class ApiTest extends TestSuite
 {
     const JWT_PATTERN = '|^(Bearer\s)([A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+\/=]*[^\.]+)$|';
     
-    protected $container;
     protected $url;
-    
-    protected $homer_token;
-    protected $luigi_token;
-    protected $burns_token;
+    protected $container;
+    protected $reset = true;
     
     protected $expected = [
         'current_page' => 1,
@@ -104,7 +101,7 @@ class ApiTest extends TestSuite
         parent::setUp();
         
         $this->url = getenv('TEST_URL');
-        
+
         $this->container = require(BASE_DIR.'/bootstrap/Config.php');
         $this->container->get('db');
         $this->container->get('facades');
@@ -118,13 +115,6 @@ class ApiTest extends TestSuite
             Recipe::with('ingredients', 'steps', 'author')->find(1)->toArray(),
             Recipe::with('ingredients', 'steps', 'author')->find(2)->toArray(),
         ];
-    }
-    
-    public function tearDown()
-    {
-        parent::tearDown();
-
-        $this->database('rollback');
     }
     
     public function test_list_recipes()
@@ -141,12 +131,7 @@ class ApiTest extends TestSuite
     {
         echo 'API test: POST /login and receive a JWT';
         
-        $body = '{
-            "username" : "luigi",
-            "password" : "Pasta1234!"
-        }';
-        
-        $response = $this->request('POST', '/auth/login', $body);
+        $response = $this->login();
         $this->assertEquals('{"status":"Authorized"}', (string) $response->getBody());
         $this->assertRegExp(self::JWT_PATTERN, $response->getHeader('authorization')[0]);
         $this->assertHeaders($response);
@@ -156,12 +141,7 @@ class ApiTest extends TestSuite
     {
         echo 'API test: POST /login with wrong password and receive 401';
         
-        $body = '{
-            "username" : "luigi",
-            "password" : "Pasta123!"
-        }';
-        
-        $response = $this->request('POST', '/auth/login', $body);
+        $response = $this->login('luigi', 'Wrong-Password-123');
         $this->assertEquals('{"error":"Unauthorized"}', (string) $response->getBody());
         $this->assertHeaders($response, 401);
     }
@@ -171,7 +151,7 @@ class ApiTest extends TestSuite
         echo 'API test: POST /recipes and create a new recipe';
         
         $header = [
-            'authorization' => 'Bearer abc.def.ghi'
+            'authorization' => [$this->get_valid_token()],
         ];
         
         $response = $this->request('POST', '/recipes', $this->newRecipe, $header);
@@ -182,6 +162,19 @@ class ApiTest extends TestSuite
         $recipe = Recipe::find(3); //new Recipe will have ID 3
         
         $this->assertEquals($input->recipe->name, $recipe->name);
+    }
+    
+    public function test_create_recipe_with_bad_token()
+    {
+        echo 'API test: POST /recipes with invalid token - returns 400';
+        
+        $header = [
+            'authorization' => 'Bearer abc.def.ghi'
+        ];
+        
+        $response = $this->request('POST', '/recipes', $this->newRecipe, $header);
+        $this->assertArraySubset(['error' => 'Bad Request'], json_decode((string) $response->getBody(), true));
+        $this->assertHeaders($response, 400);
     }
 
     public function test_get_recipe_1()
@@ -259,24 +252,53 @@ class ApiTest extends TestSuite
     /***********************************************************************
      *                       API HELPER METHODS                            *
      ***********************************************************************/
-    public function request(string $method, string $path, string $body = null, array $headers = []): ResponseInterface
+    private function request(string $method, string $path, string $body = null, array $headers = []): ResponseInterface
     {
         $request = (new Request($method, $this->url.$path, $headers, $body))->withHeader('x-forwarded-proto', 'https');
-        $app = $this->container->get(App::class);
         
-        return $app->go($request);
+        $app = $this->container->get(App::class);
+        $response = $app->go($request);
+        
+        return $response;
     }
     
-    public function jsonToArray(ResponseInterface $response): array
+    private function jsonToArray(ResponseInterface $response): array
     {
         return json_decode((string) $response->getBody(), true);
     }
     
-    public function assertHeaders(ResponseInterface $response, int $status=200): void
+    private function assertHeaders(ResponseInterface $response, int $status=200): void
     {
         $this->assertEquals($status, $response->getStatusCode());
         $this->assertEquals('application/json;charset=utf-8', $response->getHeader('content-type')[0]);
     }
+    
+    private function login(string $username = 'luigi', string $password = 'Pasta1234!')
+    {
+        $body = '{
+            "username" : "'.$username.'",
+            "password" : "'.$password.'"
+        }';
+        $response = $this->request('POST', '/auth/login', $body);
+        
+        return $response;
+    }
+    
+    private function reset_container()
+    {
+        unset($this->container);
+        $this->container = require(BASE_DIR.'/bootstrap/Config.php');
+    }
+    
+    private function get_valid_token(string $username = 'luigi', string $password = 'Pasta1234!')
+    {
+        $response = $this->login($username, $password);
+        $token = $response->getHeader('authorization')[0];
+        $this->reset_container();
+        
+        return $token;
+    }
+    
     
     
     /***********************************************************************
