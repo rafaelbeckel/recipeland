@@ -52,11 +52,11 @@ class Recipes extends Controller
         $jwt = $request->getAttribute('jwt');
         $recipe = $request->getParam('recipe');
         $user_id = $jwt->getClaim('user_id');
+        $can = (array) $jwt->getClaim('permissions');
         $author = User::find($user_id);
         
-        $permissions = $jwt->getClaim('permissions');
-        if (!$author || !array_key_exists('create_recipes', $permissions)) {
-            return $this->error('unauthorized');
+        if (!$author || !($can['create_recipes'] ?? false)) {
+            return $this->error('forbidden');
         }
         
         $db = $request->getAttribute('db');
@@ -168,7 +168,30 @@ class Recipes extends Controller
      **/
     public function delete(DeleteRecipeRequest $request, $id)
     {
-        $this->setResponseBody('Hi, '.__METHOD__.'!');
+        $jwt = $request->getAttribute('jwt');
+        $user_id = $jwt->getClaim('user_id');
+        
+        $recipe = Recipe::find($id);
+        if (!$recipe) {
+            return $this->error('not_found', 'Recipe "'.$id.'" not found!');
+        }
+        
+        $can = (array) $jwt->getClaim('permissions');
+        
+        $is_author = $user_id == $recipe->created_by;
+        $can_delete = ($is_author && ($can['delete_own_recipes'] ?? false)) ||
+                      (!$is_author && ($can['delete_all_recipes'] ?? false));
+        
+        if (!$can_delete) {
+            return $this->error('forbidden');
+        }
+        
+        $name = $recipe->name;
+        $recipe->delete();
+        
+        $this->setJsonResponse([
+            'message' => 'Recipe '.$id.': '.$name.' has been deleted!'
+        ]);
     }
 
     /**

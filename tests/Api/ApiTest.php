@@ -215,9 +215,36 @@ class ApiTest extends TestSuite
     {
         echo 'API test: DELETE /recipes/{id} and remove the given recipe';
         
+        $header = [
+            'authorization' => [$this->get_valid_token()],
+        ];
         
+        $response = $this->request('DELETE', '/recipes/1', '', $header);
         
-        $this->markTestIncomplete('Auth not implemented yet.');
+        $this->assertEquals(
+            '{"message":"Recipe 1: Test Recipe Fooo has been deleted!"}',
+            (string) $response->getBody()
+        );
+        $this->assertHeaders($response);
+        
+        $recipe = Recipe::find(1);
+        $this->assertNull($recipe);
+        
+        $recipe = Recipe::withTrashed()->where('id', 1)->first();
+        $this->assertEquals('Test Recipe Fooo', $recipe->name);
+    }
+    
+    public function test_delete_not_my_recipe()
+    {
+        echo 'API test: DELETE /recipes/{id} not owned by user - Receives 403';
+        
+        $header = [
+            'authorization' => [$this->get_valid_token()],
+        ];
+        
+        $response = $this->request('DELETE', '/recipes/2', '', $header);
+        $responseArray = $this->jsonToArray($response);
+        $this->assertHeaders($response, 403);
     }
 
     public function test_create_rating()
@@ -342,13 +369,13 @@ class ApiTest extends TestSuite
         ];
 
         $recipes = [
-            $this->createRecipe($authors[0], 'Foo'),
-            $this->createRecipe($authors[1], 'Bar'),
+            $this->createRecipe($authors[0], 'Fooo'),
+            $this->createRecipe($authors[1], 'Baar'),
         ];
 
         $ingredients = [
-            $this->createIngredient('Lol'),
-            $this->createIngredient('Lul'),
+            $this->createIngredient('Lola'),
+            $this->createIngredient('Lula'),
         ];
 
         $steps = [

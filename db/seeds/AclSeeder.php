@@ -82,7 +82,7 @@ class AclSeeder extends AbstractSeed
         );
 
         // Attach Permissions to Roles
-        $chef->attachPermissions([$create, $edit]);
+        $chef->attachPermissions([$create, $edit, $delete]);
         $owner->attachPermissions([$create, $edit, $edit_all, $delete, $delete_all]);
 
         // Create Users
