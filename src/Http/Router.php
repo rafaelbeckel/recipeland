@@ -36,7 +36,6 @@ class Router implements RouterInterface
     public function getControllerFor(RequestInterface $request): MiddlewareInterface
     {
         $route = $this->parse($request);
-
         $this->setController($route['path'], $route['arguments']);
 
         return $this->controller;
@@ -55,11 +54,11 @@ class Router implements RouterInterface
     {
         [$status, $path, $arguments] = $this->dispatch($request);
 
-        if (Dispatcher::NOT_FOUND == $status) {
+        if ($status == Dispatcher::NOT_FOUND) {
             $path = 'Errors.not_found';
         }
 
-        if (Dispatcher::METHOD_NOT_ALLOWED == $status) {
+        if ($status == Dispatcher::METHOD_NOT_ALLOWED) {
             $path = 'Errors.method_not_allowed';
         }
 

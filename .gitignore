@@ -1,6 +1,6 @@
 /vendor
 /vendor_modified
-/tests/coverage
+/public/docs/test_coverage
 /tests/_reports
 .c9/
 .phpintel/

@@ -3,12 +3,13 @@
   array (
     'GET' => 
     array (
+      '' => 'Main.home',
       '/recipes' => 'Recipes.list',
     ),
     'POST' => 
     array (
-      '/recipes' => 'Recipes.create',
       '/auth/login' => 'Auth\\Users.login',
+      '/recipes' => 'Recipes.create',
     ),
   ),
   1 => 

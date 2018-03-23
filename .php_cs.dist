@@ -2,15 +2,16 @@
 
 $finder = PhpCsFixer\Finder::create()
     ->exclude('vendor')
+    ->exclude('src/Routes.php')
     ->in(__DIR__);
 
 return PhpCsFixer\Config::create()
     ->setRules([
-        '@PSR2' => true,
-        '@Symfony' => true,
-        'yoda_style' => false,
-        'array_syntax' => ['syntax' => 'short'],
-        'braces' => ['allow_single_line_closure' => true],
+        '@PSR2'                  => true,
+        '@Symfony'               => true,
+        'yoda_style'             => false,
+        'array_syntax'           => ['syntax' => 'short'],
+        'braces'                 => ['allow_single_line_closure' => true],
         'binary_operator_spaces' => ['default' => 'align'],
     ])
     ->setFinder($finder);
