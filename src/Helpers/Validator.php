@@ -76,11 +76,12 @@ abstract class Validator implements ValidatorInterface
         return $this;
     }
 
-    public function validate($payload, string $scope = null): bool
+    public function validate($payload, string $scope = null, string $base_rule = null): bool
     {
         $this->payload = $payload;
+        $this->scope = $scope;
 
-        return $this->applyRules($payload, $this->rules, $scope);
+        return $this->applyRules($payload, $this->rules, $base_rule);
     }
 
     public function getMessage(): string

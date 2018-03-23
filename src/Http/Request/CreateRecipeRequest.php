@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Recipeland\Http\Request;
 
+use Lcobucci\JWT\Token;
 use Illuminate\Database\Connection as DB;
 use Recipeland\Http\Request\SpecializedRequest;
 
@@ -14,9 +15,9 @@ class CreateRecipeRequest extends SpecializedRequest
         $this->addRule('headers:item(authorization):item(0):is_jwt');
         
         $this->addRule('attributes:item(db):is_instance_of('.DB::class.')');
+        $this->addRule('attributes:item(jwt):is_instance_of('.Token::class.')');
         
         $this->addRule('body:item(recipe):is_array');
-        $this->addRule('body:item(recipe):item(author):chars:min(4)');
         $this->addRule('body:item(recipe):item(name):chars:min(4)');
         $this->addRule('body:item(recipe):item(subtitle):chars:min(10)');
         $this->addRule('body:item(recipe):item(description):chars:min(10)');
@@ -35,8 +36,7 @@ class CreateRecipeRequest extends SpecializedRequest
         $this->addRule('body:item(recipe):item(ingredients):each:item(quantity):is_numeric');
         $this->addRule('body:item(recipe):item(ingredients):each:item(units):not_empty');
         $this->addRule('body:item(recipe):item(ingredients):each:item(picture):is_url');
-        // @TODO implement "optional" and "not" modifiers into the validator
-        // $this->addRule('body:item(recipe):item(ingredients):each:item(allergens):optional');
+        $this->addRule('?body:item(recipe):item(ingredients):each:item(allergens):chars:min(2)');
         
         $this->addRule('body:item(recipe):item(steps):is_array');
         $this->addRule('body:item(recipe):item(steps):each:item(description):chars:min(10)');

@@ -13,12 +13,22 @@ trait ParsesValidationDSL
         throw new BadMethodCallException('Modifier ['.$method.'] does not exist.');
     }
     
-    private function applyRules($payload, $rules, string $scope = null):bool
+    private function applyRules($payload, array $rules, ?string $base_rule):bool
     {
         foreach ($rules as $rule) {
-            if ($scope) {
-                if (strpos($rule, $scope.':') !== false) {
-                    $rule = str_replace($scope.':', '', $rule);
+            $full_rule = $rule;
+            
+            if ($base_rule) {
+                $optional = $this->isOptional($base_rule);
+            } else {
+                $optional = $this->isOptional($rule);
+            }
+            
+            $rule = ltrim($rule, '?');
+            
+            if ($this->scope) {
+                if (strpos($rule, $this->scope.':') !== false) {
+                    $rule = str_replace($this->scope.':', '', $rule);
                 } else {
                     continue;
                 }
@@ -28,26 +38,41 @@ trait ParsesValidationDSL
             
             if ($value == 'each') {
                 $rule = substr($rule, 5); // without 'each:'
-                if (!is_iterable($payload) || !$this->each($payload, $rule)) {
+                $base_rule = $base_rule ?: $full_rule;
+                if (!is_iterable($payload) || !$this->each($payload, $rule, $base_rule)) {
                     return false;
                 }
             } elseif (strpos($ruleName, ':')) { // "value" is a item(n)
-                if (!$this->each([$value], $ruleName)) {
+                $base_rule = $base_rule ?: $full_rule;
+                if (!$this->each([$value], $ruleName, $base_rule)) {
                     return false;
                 }
-            } else {
+            } elseif (!is_null($value)) {
                 $ruleObject = $this->ruleFactory->build($ruleName, $value);
-
+                
                 // Apply the current rule
                 if (!call_user_func_array([$ruleObject, 'apply'], $arguments)) {
-                    $this->message = $ruleObject->getMessage();
-
+                    $context = $base_rule ? $base_rule.' -> ' : '';
+                    $this->message = $context.$ruleObject->getMessage();
+                    
                     return false;
                 }
+            } elseif (!$optional) {
+                $context = $base_rule ? $base_rule.' -> ' : '';
+                $this->message = $context.'Mandatory rule is null or malformed.';
+                
+                return false;
             }
+            
+            $base_rule = null;
         }
         
         return true;
+    }
+    
+    private function isOptional(string $rule)
+    {
+        return $rule[0] == '?';
     }
     
     private function parseRule(string $rule): array
@@ -86,7 +111,7 @@ trait ParsesValidationDSL
         }
     }
 
-    private function each(iterable $payload, string $rule): bool
+    private function each(iterable $payload, string $rule, string $base_rule): bool
     {
         foreach ($payload as $value) {
             $validator = new class($this->ruleFactory) extends Validator {
@@ -94,7 +119,7 @@ trait ParsesValidationDSL
 
             $validator->addRule($rule);
 
-            if (!$validator->validate($value)) {
+            if (!$validator->validate($value, null, $base_rule)) {
                 $this->message = $validator->getMessage();
                 return false;
             }

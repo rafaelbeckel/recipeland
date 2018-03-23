@@ -11,6 +11,7 @@ use Recipeland\Http\Request;
 use Recipeland\Data\Ingredient;
 use Illuminate\Support\Facades\DB;
 use Recipeland\Http\Request\CreateRecipeRequest;
+use Recipeland\Http\Request\DeleteRecipeRequest;
 use Recipeland\Controllers\AbstractController as Controller;
 
 class Recipes extends Controller
@@ -48,10 +49,13 @@ class Recipes extends Controller
      **/
     public function create(CreateRecipeRequest $request)
     {
+        $jwt = $request->getAttribute('jwt');
         $recipe = $request->getParam('recipe');
-        $author = User::where('username', $recipe['author'])->first();
+        $user_id = $jwt->getClaim('user_id');
+        $author = User::find($user_id);
         
-        if (!$author) {
+        $permissions = $jwt->getClaim('permissions');
+        if (!$author || !array_key_exists('create_recipes', $permissions)) {
             return $this->error('unauthorized');
         }
         
@@ -78,7 +82,7 @@ class Recipes extends Controller
                     [
                         'name' => $ingredient['name'],
                         'picture' => $ingredient['picture'],
-                        'allergens' => $ingredient['allergens'],
+                        'allergens' => $ingredient['allergens'] ?? null,
                     ]
                 );
                 $dbRecipe->attachIngredient(
@@ -124,6 +128,10 @@ class Recipes extends Controller
     {
         $recipe = Recipe::with('ingredients', 'steps', 'author')->find($id);
 
+        if (!$recipe) {
+            return $this->error('not_found');
+        }
+
         $this->setJsonResponse($recipe->toArray());
     }
 
@@ -134,7 +142,7 @@ class Recipes extends Controller
      * @params ServerRequestInterface
      * @params integer $id
      **/
-    public function update(Request $request, $id)
+    public function update(UpdateRecipeRequest $request, $id)
     {
         $this->setResponseBody('Hi, '.__METHOD__.'!');
     }
@@ -146,7 +154,7 @@ class Recipes extends Controller
      * @params ServerRequestInterface
      * @params integer $id
      **/
-    public function updateField(Request $request, $id)
+    public function updateField(UpdateRecipeFieldsRequest $request, $id)
     {
         $this->setResponseBody('Hi, '.__METHOD__.'!');
     }
@@ -158,7 +166,7 @@ class Recipes extends Controller
      * @params ServerRequestInterface
      * @params integer $id
      **/
-    public function delete(Request $request, $id)
+    public function delete(DeleteRecipeRequest $request, $id)
     {
         $this->setResponseBody('Hi, '.__METHOD__.'!');
     }
@@ -170,7 +178,7 @@ class Recipes extends Controller
      * @params ServerRequestInterface
      * @params integer $id
      **/
-    public function rate(Request $request, $id)
+    public function rate(RateRecipeRequest $request, $id)
     {
         $this->setResponseBody('Hi, '.__METHOD__.'!');
     }

@@ -22,6 +22,7 @@ abstract class SpecializedRequest extends Request implements SpecializedRequestI
     public function addRule($rule)
     {
         $scope = strtok($rule, ':');
+        $scope = ltrim($scope, '?');
         
         if (array_key_exists($scope, $this->data)) {
             $this->validator = $this->getValidator();
