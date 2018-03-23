@@ -13,6 +13,5 @@ class UpdateRecipeRequest extends CreateRecipeRequest
     public function addRules(): void
     {
         parent::addRules();
-        $this->addRule('body:item(recipe):item(id):is_numeric');
     }
 }

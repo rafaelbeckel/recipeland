@@ -36,7 +36,7 @@ class UpdateRecipeFieldsRequest extends CreateRecipeRequest
         $this->addRule('?body:item(recipe):item(ingredients):each:item(slug):chars:min(2)');
         $this->addRule('?body:item(recipe):item(ingredients):each:item(name):chars:min(4)');
         $this->addRule('?body:item(recipe):item(ingredients):each:item(quantity):is_numeric');
-        $this->addRule('?body:item(recipe):item(ingredients):each:item(units):not_empty');
+        $this->addRule('?body:item(recipe):item(ingredients):each:item(unit):not_empty');
         $this->addRule('?body:item(recipe):item(ingredients):each:item(picture):is_url');
         $this->addRule('?body:item(recipe):item(ingredients):each:item(allergens):chars:min(2)');
         

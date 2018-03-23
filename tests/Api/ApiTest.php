@@ -51,7 +51,6 @@ class ApiTest extends TestSuite
     
     protected $newRecipe = '{
         "recipe" : {
-            "author" : "luigi",
             "name" : "My Most delicious Recipe!",
             "subtitle" : "My subtitle",
             "description" : "My description",
@@ -64,7 +63,7 @@ class ApiTest extends TestSuite
                 {
                     "slug" : "my_ingredient",
                     "quantity" : "12",
-                    "units" : "mg",
+                    "unit" : "mg",
                     "name" : "My Ingredient",
                     "picture" : "https://example.com/picture.jpg",
                     "allergens" : "milk"
@@ -72,7 +71,7 @@ class ApiTest extends TestSuite
                 {
                     "slug" : "my_second_ingredient",
                     "quantity" : "10",
-                    "units" : "ml",
+                    "unit" : "ml",
                     "name" : "My Second Ingredient",
                     "picture" : "https://example.com/picture.jpg",
                     "allergens" : "none"
@@ -81,13 +80,11 @@ class ApiTest extends TestSuite
             "steps" : [
                 {
                     "description" : "Put ingredient somewhere",
-                    "picture" : "https://example.com/picture.jpg",
-                    "order" : 1
+                    "picture" : "https://example.com/picture.jpg"
                 },
                 {
                     "description" : "Eat Ingredient",
-                    "picture" : "https://example.com/picture.jpg",
-                    "order" : 2
+                    "picture" : "https://example.com/picture.jpg"
                 }
             ]
         }
@@ -155,13 +152,26 @@ class ApiTest extends TestSuite
         ];
         
         $response = $this->request('POST', '/recipes', $this->newRecipe, $header);
-        $responseArray = $this->jsonToArray($response);
         $this->assertHeaders($response);
         
-        $input = json_decode($this->newRecipe);
-        $recipe = Recipe::find(3); //new Recipe will have ID 3
+        $input = json_decode($this->newRecipe, true);
+        $recipe = Recipe::with('ingredients', 'steps')->find(3)->toArray(); //new Recipe will have ID 3
         
-        $this->assertEquals($input->recipe->name, $recipe->name);
+        // Adapt values for deep comparison
+        $input['recipe']['created_by'] = 2;
+        $input['recipe']['difficulty'] = '3';
+        $input['recipe']['vegetarian'] = true;
+        foreach ($recipe['ingredients'] as $key => $value) {
+            $recipe['ingredients'][$key]['quantity'] = $value['details']['quantity'];
+            $recipe['ingredients'][$key]['unit'] = $value['details']['unit'];
+        }
+        $this->recursive_unset($recipe, 'id');
+        $this->recursive_unset($recipe, 'details');
+        $this->recursive_unset($recipe, 'created_at');
+        $this->recursive_unset($recipe, 'updated_at');
+        $this->recursive_unset($recipe, 'deleted_at');
+        
+        $this->assertEquals($input['recipe'], $recipe);
     }
     
     public function test_create_recipe_with_bad_token()
@@ -200,8 +210,44 @@ class ApiTest extends TestSuite
     public function test_edit_recipe()
     {
         echo 'API test: PUT /recipes/{id} and edit the given recipe';
-
-        $this->markTestIncomplete('Auth not implemented yet.');
+        
+        $header = [
+            'authorization' => [$this->get_valid_token()],
+        ];
+        
+        $response = $this->request('PUT', '/recipes/1', $this->newRecipe, $header);
+        $this->assertHeaders($response);
+        
+        $input = json_decode($this->newRecipe, true);
+        $recipe = Recipe::with('ingredients', 'steps')->find(1)->toArray();
+        
+        // Adapt values for deep comparison
+        $input['recipe']['created_by'] = 2;
+        $input['recipe']['difficulty'] = '3';
+        $input['recipe']['vegetarian'] = true;
+        foreach ($recipe['ingredients'] as $key => $value) {
+            $recipe['ingredients'][$key]['quantity'] = $value['details']['quantity'];
+            $recipe['ingredients'][$key]['unit'] = $value['details']['unit'];
+        }
+        $this->recursive_unset($recipe, 'id');
+        $this->recursive_unset($recipe, 'details');
+        $this->recursive_unset($recipe, 'created_at');
+        $this->recursive_unset($recipe, 'updated_at');
+        $this->recursive_unset($recipe, 'deleted_at');
+        
+        $this->assertEquals($input['recipe'], $recipe);
+    }
+    
+    public function test_edit_not_my_recipe()
+    {
+        echo 'API test: PUT /recipes/{id} not owned by user - Receives 403';
+        
+        $header = [
+            'authorization' => [$this->get_valid_token()],
+        ];
+        
+        $response = $this->request('PUT', '/recipes/2', $this->newRecipe, $header);
+        $this->assertHeaders($response, 403);
     }
 
     public function test_edit_recipe_part()
@@ -243,7 +289,6 @@ class ApiTest extends TestSuite
         ];
         
         $response = $this->request('DELETE', '/recipes/2', '', $header);
-        $responseArray = $this->jsonToArray($response);
         $this->assertHeaders($response, 403);
     }
 
@@ -324,6 +369,16 @@ class ApiTest extends TestSuite
         $this->reset_container();
         
         return $token;
+    }
+    
+    private function recursive_unset(&$array, $unwanted_key)
+    {
+        unset($array[$unwanted_key]);
+        foreach ($array as &$value) {
+            if (is_array($value)) {
+                $this->recursive_unset($value, $unwanted_key);
+            }
+        }
     }
     
     
