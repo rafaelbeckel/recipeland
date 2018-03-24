@@ -10,6 +10,7 @@ use Phinx\Config\Config;
 use Recipeland\Data\Step;
 use Recipeland\Data\User;
 use Recipeland\Data\Recipe;
+use Recipeland\Data\Rating;
 use Phinx\Seed\AbstractSeed;
 use Phinx\Wrapper\TextWrapper;
 use Recipeland\Data\Ingredient;
@@ -324,7 +325,41 @@ class ApiTest extends TestSuite
     {
         echo 'API test: POST /recipes/{id}/rating and evaluate the given recipe once';
 
-        $this->markTestIncomplete('Auth not implemented yet.');
+        $header = [
+            'authorization' => [$this->get_valid_token()],
+        ];
+        
+        $rating = [
+            'rating' => 5
+        ];
+        
+        $response = $this->request('POST', '/recipes/2/rating', json_encode($rating), $header);
+        $this->assertHeaders($response);
+        
+        $rating = Rating::where('recipe_id', 2)->first();
+        $this->assertEquals('5', $rating->rating);
+        
+        $this->reset_container();
+        
+        // Assert we cannot rate twice
+        $response = $this->request('POST', '/recipes/2/rating', json_encode($rating), $header);
+        $this->assertHeaders($response, 403);
+    }
+    
+    public function test_create_rating_own_recipe()
+    {
+        echo 'API test: POST /recipes/{id}/rating to own recipe - get 403';
+
+        $header = [
+            'authorization' => [$this->get_valid_token()],
+        ];
+        
+        $rating = [
+            'rating' => 5
+        ];
+        
+        $response = $this->request('POST', '/recipes/1/rating', json_encode($rating), $header);
+        $this->assertHeaders($response, 403);
     }
 
     public function test_404()
@@ -341,7 +376,7 @@ class ApiTest extends TestSuite
     {
         echo 'API test: GET /recipes/{id}/rating and receive 405 - Method Not Allowed';
 
-        $response = $this->request('GET', '/recipes/1/rating');
+        $response = $this->request('DELETE', '/recipes/1/rating');
         $responseArray = $this->jsonToArray($response);
         $this->assertEquals(['error' => 'Method Not Allowed'], $responseArray);
         $this->assertHeaders($response, 405);

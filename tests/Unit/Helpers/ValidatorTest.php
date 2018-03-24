@@ -74,6 +74,54 @@ class ValidatorTest extends TestSuite
         $this->assertEquals($validator->getMessage(), 'rule_name -> You are False!');
     }
     
+    public function test_call_optional_rule_null_value()
+    {
+        echo 'Validator - DSL: test optional rule with null value - return true';
+
+        $weWillTestYou = null;
+        $camelCasedRuleName = 'RuleName';
+
+        $factory = $this->createMock(Factory::class);
+
+        $validator = new class($factory) extends Validator {
+            protected function init(): void
+            {
+                $this->addRule('?rule_name');
+            }
+        };
+
+        $this->assertTrue($validator->validate($weWillTestYou));
+    }
+    
+    public function test_call_optional_rule_with_some_value()
+    {
+        echo 'Validator - DSL: test optional rule with a valid value';
+
+        $weWillTestYou = 'i_will_return_true';
+        $camelCasedRuleName = 'RuleName';
+
+        $rule = $this->createMock(AbstractRule::class, ['i_will_return_true']);
+        $factory = $this->createMock(Factory::class);
+
+        $rule->expects($this->once())
+             ->method('apply')
+             ->willReturn(true);
+
+        $factory->expects($this->once())
+                ->method('build')
+                ->with($camelCasedRuleName, $weWillTestYou)
+                ->willReturn($rule);
+
+        $validator = new class($factory) extends Validator {
+            protected function init(): void
+            {
+                $this->addRule('?rule_name');
+            }
+        };
+
+        $this->assertTrue($validator->validate($weWillTestYou));
+    }
+    
     public function test_call_malformed_rule()
     {
         echo 'Validator - DSL: malformed rule - throws Exception';

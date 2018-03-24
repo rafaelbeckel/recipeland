@@ -20,6 +20,7 @@ class Routes
         $this->add( 'PATCH',  '/recipes/{id}',        'Recipes.updateFields' );
         $this->add( 'DELETE', '/recipes/{id}',        'Recipes.delete'       );
         $this->add( 'POST',   '/recipes/{id}/rating', 'Recipes.rate'         );
+        $this->add( 'GET',    '/recipes/{id}/rating', 'Recipes.getRate'      );
     }
     
     public function add($method, $path, $destination)

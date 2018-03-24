@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Recipeland\Controllers;
 
 use TypeError;
+use Throwable;
 use ReflectionMethod;
 use BadMethodCallException;
 use Psr\Log\LoggerInterface;
@@ -34,6 +35,7 @@ abstract class AbstractController implements ControllerInterface, MiddlewareInte
     protected $error;
     protected $logger;
     protected $action;
+    protected $message;
     protected $response;
     protected $arguments = [];
 
@@ -81,9 +83,10 @@ abstract class AbstractController implements ControllerInterface, MiddlewareInte
         $this->setResponseBody(json_encode($json));
     }
     
-    protected function error(string $type): void
+    protected function error(string $type, string $message = null): void
     {
         $this->error = $type;
+        $this->message = $message;
     }
 
     final public function process(RequestInterface $request, HandlerInterface $next): ResponseInterface
@@ -94,24 +97,12 @@ abstract class AbstractController implements ControllerInterface, MiddlewareInte
             $request = $this->upgradeRequest($actionName, $request);
             $this->$actionName($request, ...array_values($this->arguments));
             if ($this->error) {
-                return $this->errorResponse($this->error, $request, $next);
+                return $this->errorResponse($this->error, $request, $next, $this->message);
             }
         } catch (TypeError $e) {
-            if ($this->logger) {
-                $this->logger->error($e->getMessage(), $e->getTrace());
-            }
-            return $this->errorResponse(
-                'unauthorized',
-                $request,
-                $next,
-                $request->getAttribute('message')
-            );
+            return $this->logAndReturn('unauthorized', $e, $request, $next);
         } catch (BadMethodCallException $e) {
-            if ($this->logger) {
-                $this->logger->error($e->getMessage(), $e->getTrace());
-            }
-
-            return $this->errorResponse('not_found', $request, $next);
+            return $this->logAndReturn('not_found', $e, $request, $next);
         }
 
         return $this->response; // Back to upper middleware layers.
@@ -183,5 +174,32 @@ abstract class AbstractController implements ControllerInterface, MiddlewareInte
         $interfaces = [$class => $class] + class_implements($class);
 
         return array_key_exists(SpecializedRequestInterface::class, $interfaces);
+    }
+    
+    private function logAndReturn(
+        string $type,
+        Throwable $e,
+        RequestInterface $request,
+        HandlerInterface $next
+    ) {
+        if ($this->logger) {
+            $this->logger->error($e->getMessage(), $e->getTrace());
+        }
+        
+        return $this->errorResponse(
+            $type,
+            $request,
+            $next,
+            $request->getAttribute('message').' '.$this->getDetails($e)
+        );
+    }
+    
+    private function getDetails(Throwable $e): string
+    {
+        $details = '';
+        if (getenv('ENVIRONMENT') != 'production') {
+            $details = $e->getMessage().' '.$e->getTraceAsString();
+        }
+        return $details;
     }
 }
