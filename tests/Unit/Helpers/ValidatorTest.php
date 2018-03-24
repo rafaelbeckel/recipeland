@@ -71,7 +71,7 @@ class ValidatorTest extends TestSuite
         };
 
         $this->assertFalse($validator->validate($weWillTestYou));
-        $this->assertEquals($validator->getMessage(), 'You are False!');
+        $this->assertEquals($validator->getMessage(), 'rule_name -> You are False!');
     }
     
     public function test_call_malformed_rule()

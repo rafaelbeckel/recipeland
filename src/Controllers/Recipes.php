@@ -9,16 +9,19 @@ use Recipeland\Data\Step;
 use Recipeland\Data\Recipe;
 use Recipeland\Http\Request;
 use Recipeland\Data\Ingredient;
-use Illuminate\Support\Facades\DB;
+use Recipeland\Traits\CooksRecipes;
 use Recipeland\Http\Request\RateRecipeRequest;
 use Recipeland\Http\Request\CreateRecipeRequest;
 use Recipeland\Http\Request\UpdateRecipeRequest;
 use Recipeland\Http\Request\DeleteRecipeRequest;
 use Recipeland\Http\Request\UpdateRecipeFieldsRequest;
 use Recipeland\Controllers\AbstractController as Controller;
+use Psr\Http\Message\ServerRequestInterface as RequestInterface;
 
 class Recipes extends Controller
 {
+    use CooksRecipes;
+    
     const RESULTS_PER_PAGE = 10;
     const QUERY_COLUMNS = ['*'];
     const PAGE_NAME = 'page';
@@ -53,7 +56,7 @@ class Recipes extends Controller
     public function create(CreateRecipeRequest $request)
     {
         $jwt = $request->getAttribute('jwt');
-        $recipe = $request->getParam('recipe');
+        $data = $request->getParam('recipe');
         $user_id = $jwt->getClaim('user_id');
         $can = (array) $jwt->getClaim('permissions');
         
@@ -62,61 +65,16 @@ class Recipes extends Controller
         }
         
         $db = $request->getAttribute('db');
+        $recipe = $this->createNewRecipe($db, $data, $user_id);
         
-        $dbRecipe = $db->transaction(function () use ($recipe, $user_id) {
-            $dbRecipe = Recipe::firstOrCreate(
-                ['name' => $recipe['name']],
-                [
-                    'created_by'  => $user_id,
-                    'subtitle'    => $recipe['subtitle'],
-                    'description' => $recipe['description'],
-                    'prep_time'   => $recipe['prep_time'],
-                    'total_time'  => $recipe['total_time'],
-                    'vegetarian'  => $recipe['vegetarian'],
-                    'difficulty'  => $recipe['difficulty'],
-                    'picture'     => $recipe['picture'],
-                ]
-            );
-            
-            foreach ($recipe['ingredients'] as $ingredient) {
-                $dbIngredient = Ingredient::firstOrCreate(
-                    ['slug' => $ingredient['slug']],
-                    [
-                        'name' => $ingredient['name'],
-                        'picture' => $ingredient['picture'],
-                        'allergens' => $ingredient['allergens'] ?? null,
-                    ]
-                );
-                $dbRecipe->attachIngredient(
-                    $dbIngredient,
-                    $ingredient['quantity'],
-                    $ingredient['unit']
-                );
-            }
-            
-            $counter = 1;
-            foreach ($recipe['steps'] as $step) {
-                $dbStep = Step::firstOrCreate(
-                    ['description' => $step['description']],
-                    [
-                        'picture' => $step['picture'],
-                    ]
-                );
-                $dbRecipe->attachStep($dbStep, $counter);
-                $counter++;
-            }
-            
-            return $dbRecipe;
-        });
-        
-        if (empty($dbRecipe)) {
+        if (empty($recipe)) {
             return $this->error(
                 'internal_server_error',
                 'Insert a new Recipe: DB Transaction failed.'
             );
         }
-
-        $this->setJsonResponse($dbRecipe->toArray());
+        
+        $this->setJsonResponse($recipe->toArray());
     }
 
     /**
@@ -146,83 +104,7 @@ class Recipes extends Controller
      **/
     public function update(UpdateRecipeRequest $request, $id)
     {
-        $jwt = $request->getAttribute('jwt');
-        $updated = $request->getParam('recipe');
-        $user_id = $jwt->getClaim('user_id');
-        
-        $recipe = Recipe::find($id);
-        if (!$recipe) {
-            return $this->error('not_found', 'Recipe "'.$id.'" not found!');
-        }
-        
-        $can = (array) $jwt->getClaim('permissions');
-        $is_author = $user_id == $recipe->created_by;
-        $can_edit = ($is_author && ($can['edit_own_recipes'] ?? false)) ||
-                    (!$is_author && ($can['edit_all_recipes'] ?? false));
-        
-        if (!$can_edit) {
-            return $this->error('forbidden');
-        }
-        
-        $last_update = $recipe->updated_at;
-        $db = $request->getAttribute('db');
-        $db->transaction(function () use ($recipe, $updated) {
-            $recipe->name        = $updated['name'];
-            $recipe->subtitle    = $updated['subtitle'];
-            $recipe->description = $updated['description'];
-            $recipe->prep_time   = $updated['prep_time'];
-            $recipe->total_time  = $updated['total_time'];
-            $recipe->vegetarian  = $updated['vegetarian'];
-            $recipe->difficulty  = $updated['difficulty'];
-            $recipe->picture     = $updated['picture'];
-            $recipe->save();
-            
-            $ingredients = [];
-            foreach ($updated['ingredients'] as $updatedIngredient) {
-                $ingredient = Ingredient::firstOrNew(
-                    ['slug' => $updatedIngredient['slug']]
-                );
-                $ingredient->name = $updatedIngredient['name'];
-                $ingredient->picture = $updatedIngredient['picture'];
-                $ingredient->allergens = $updatedIngredient['allergens'] ?? null;
-                $ingredient->save();
-                
-                $ingredients[$ingredient->id] = [
-                    'quantity' => $updatedIngredient['quantity'],
-                    'unit' => $updatedIngredient['unit']
-                ];
-            }
-            // This will rebuild all relationships
-            $recipe->ingredients()->sync($ingredients);
-            
-            $steps = [];
-            $counter = 1;
-            foreach ($updated['steps'] as $updatedStep) {
-                $step = Step::firstOrNew(
-                    ['description' => $updatedStep['description']]
-                );
-                $step->picture = $updatedStep['picture'];
-                $step->save();
-                
-                $steps[$step->id] = [
-                    'order' => $counter
-                ];
-                
-                $counter++;
-            }
-            $recipe->steps()->sync($steps);
-            
-            return $recipe;
-        });
-        
-        if ($recipe->updated_at == $last_update) {
-            return $this->error(
-                'internal_server_error',
-                'Update Recipe: DB Transaction failed.'
-            );
-        }
-
-        $this->setJsonResponse($recipe->toArray());
+        return $this->checkCredentialsAndUpdate($request, $id, ['hard' => true]);
     }
 
     /**
@@ -232,9 +114,9 @@ class Recipes extends Controller
      * @params ServerRequestInterface
      * @params integer $id
      **/
-    public function updateField(UpdateRecipeFieldsRequest $request, $id)
+    public function updateFields(UpdateRecipeFieldsRequest $request, $id)
     {
-        $this->setResponseBody('Hi, '.__METHOD__.'!');
+        return $this->checkCredentialsAndUpdate($request, $id, ['hard' => false]);
     }
 
     /**
@@ -246,21 +128,13 @@ class Recipes extends Controller
      **/
     public function delete(DeleteRecipeRequest $request, $id)
     {
-        $jwt = $request->getAttribute('jwt');
-        $user_id = $jwt->getClaim('user_id');
-        
         $recipe = Recipe::find($id);
         if (!$recipe) {
             return $this->error('not_found', 'Recipe "'.$id.'" not found!');
         }
         
-        $can = (array) $jwt->getClaim('permissions');
-        $is_author = $user_id == $recipe->created_by;
-        $can_delete = ($is_author && ($can['delete_own_recipes'] ?? false)) ||
-                      (!$is_author && ($can['delete_all_recipes'] ?? false));
-        
-        if (!$can_delete) {
-            return $this->error('forbidden');
+        if (!$this->can($request, 'delete', $recipe)) {
+            return $this->error('forbidden', 'User cannot delete this recipe.');
         }
         
         $name = $recipe->name;
@@ -281,5 +155,47 @@ class Recipes extends Controller
     public function rate(RateRecipeRequest $request, $id)
     {
         $this->setResponseBody('Hi, '.__METHOD__.'!');
+    }
+    
+    
+    /**
+     * A helper method to check token's permission
+     **/
+    private function can(Request $request, string $action, Recipe $recipe): bool
+    {
+        $jwt = $request->getAttribute('jwt');
+        $user_id = $jwt->getClaim('user_id');
+        $can = (array) $jwt->getClaim('permissions');
+        $is_author = $user_id == $recipe->created_by;
+        $proceed = ($is_author && ($can[$action.'_own_recipes'] ?? false)) ||
+                   (!$is_author && ($can[$action.'_all_recipes'] ?? false));
+        
+        return $proceed;
+    }
+    
+    private function checkCredentialsAndUpdate(RequestInterface $request, $id, array $options)
+    {
+        $recipe = Recipe::find($id);
+        if (!$recipe) {
+            return $this->error('not_found', 'Recipe "'.$id.'" not found!');
+        }
+        
+        if (!$this->can($request, 'edit', $recipe)) {
+            return $this->error('forbidden', 'User cannot edit this recipe.');
+        }
+        
+        $last_update = $recipe->updated_at;
+        $db = $request->getAttribute('db');
+        $data = $request->getParam('recipe');
+        $this->updateRecipe($db, $recipe, $data, $options);
+        
+        if ($recipe->updated_at == $last_update) {
+            return $this->error(
+                'internal_server_error',
+                'Update Recipe: DB Transaction failed.'
+            );
+        }
+
+        $this->setJsonResponse($recipe->toArray());
     }
 }

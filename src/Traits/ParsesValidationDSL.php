@@ -8,6 +8,9 @@ use Recipeland\Helpers\Validator;
 
 trait ParsesValidationDSL
 {
+    private $optional = false;
+    private $base_rule = null;
+    
     public function __call($method, $parameters)
     {
         throw new BadMethodCallException('Modifier ['.$method.'] does not exist.');
@@ -16,55 +19,111 @@ trait ParsesValidationDSL
     private function applyRules($payload, array $rules, ?string $base_rule):bool
     {
         foreach ($rules as $rule) {
-            $full_rule = $rule;
+            $this->base_rule = $base_rule ?: $rule;
             
-            if ($base_rule) {
-                $optional = $this->isOptional($base_rule);
-            } else {
-                $optional = $this->isOptional($rule);
-            }
+            [$rule_name, $value, $arguments] = $this->parseRule($rule);
             
-            $rule = ltrim($rule, '?');
-            
-            if ($this->scope) {
-                if (strpos($rule, $this->scope.':') !== false) {
-                    $rule = str_replace($this->scope.':', '', $rule);
-                } else {
-                    continue;
-                }
-            }
-            
-            [$ruleName, $value, $arguments] = $this->parseRule($rule);
-            
-            if ($value == 'each') {
-                $rule = substr($rule, 5); // without 'each:'
-                $base_rule = $base_rule ?: $full_rule;
-                if (!is_iterable($payload) || !$this->each($payload, $rule, $base_rule)) {
+            if ($rule_name == 'continue') {
+                continue;
+            } elseif ($rule_name == 'each') {
+                $rule = substr($rule, 5); // drop 'each:'
+                if (!is_iterable($payload) ||
+                    !$this->each($payload, $rule, $this->base_rule)
+                ) {
                     return false;
                 }
-            } elseif (strpos($ruleName, ':')) { // "value" is a item(n)
-                $base_rule = $base_rule ?: $full_rule;
-                if (!$this->each([$value], $ruleName, $base_rule)) {
+            } elseif (strpos($rule_name, ':')) {
+                if (!$this->each([$value], $rule_name, $this->base_rule)) {
                     return false;
                 }
             } elseif (!is_null($value)) {
-                $ruleObject = $this->ruleFactory->build($ruleName, $value);
-                
-                // Apply the current rule
-                if (!call_user_func_array([$ruleObject, 'apply'], $arguments)) {
-                    $context = $base_rule ? $base_rule.' -> ' : '';
-                    $this->message = $context.$ruleObject->getMessage();
-                    
+                if (!$this->applyRule($rule_name, $value, $arguments)) {
                     return false;
                 }
-            } elseif (!$optional) {
-                $context = $base_rule ? $base_rule.' -> ' : '';
-                $this->message = $context.'Mandatory rule is null or malformed.';
-                
+            } elseif (!$this->optional) {
+                $this->message = 'Mandatory rule is null';
                 return false;
             }
             
             $base_rule = null;
+            $this->base_rule = null;
+        }
+        
+        return true;
+    }
+    
+    private function parseRule(string $rule): array
+    {
+        if ($this->base_rule) {
+            $this->optional = $this->isOptional($this->base_rule);
+        } else {
+            $this->optional = $this->isOptional($rule);
+        }
+            
+        // Remove optional token from rule
+        $rule = ltrim($rule, '?');
+        
+        // Remove scope from rule
+        if ($this->scope) {
+            if (strpos($rule, $this->scope.':') !== false) {
+                $rule = str_replace($this->scope.':', '', $rule);
+            } else {
+                return ['continue', null, null]; // rule out of scope
+            }
+        }
+        
+        if (strpos($rule, ':')) {
+            [$modifier, $rule_function] = explode(':', $rule, 2);
+            
+            if ($modifier == 'each') {
+                return ['each', null, null];
+            }
+            
+            $value = $this->runModifier($modifier);
+            
+            if (is_null($value) && $this->optional) {
+                return ['continue', null, null]; // null value is optional
+            }
+            
+            [$rule_name, $arguments] = $this->parseFunction($rule_function);
+            
+            if (!strpos($rule_name, ':')) {
+                $rule_name = $this->toCamelCase($rule_name); // last
+            }
+        } else {
+            $rule_name = $this->toCamelCase($rule) ;
+            $value = $this->payload;
+            $arguments = [];
+        }
+
+        return [$rule_name, $value, $arguments];
+    }
+    
+    private function applyRule(string $rule_name, $value, array $arguments)
+    {
+        if ($this->canApply($rule_name, $value, $arguments)) {
+            $rule = $this->ruleFactory->build($rule_name, $value);
+            if (!call_user_func_array([$rule, 'apply'], $arguments)) {
+                $this->message = $this->base_rule.' -> '.$rule->getMessage();
+                
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    private function canApply(string $rule_name, $value, array $arguments)
+    {
+        if ($this->optional && $rule_name == 'Compare') {
+            $key1 = $arguments[0] ?? 0;
+            $key2 = $arguments[2] ?? 1;
+             
+            if (!is_array($value) ||
+                !array_key_exists($key1, $value) ||
+                !array_key_exists($key2, $value)
+            ) {
+                return false;
+            }
         }
         
         return true;
@@ -74,37 +133,12 @@ trait ParsesValidationDSL
     {
         return $rule[0] == '?';
     }
-    
-    private function parseRule(string $rule): array
-    {
-        if (strpos($rule, ':')) {
-            [$modifier, $rulefunction] = explode(':', $rule, 2);
-
-            $value = $this->runModifier($modifier);
-
-            [$rulename, $arguments] = $this->parseFunction($rulefunction);
-            
-            if (strpos($rulename, ':')) {
-                $ruleClass = $rulefunction;
-            } else {
-                $ruleClass = $this->toCamelCase($rulename);
-            }
-        } else {
-            $value = $this->payload;
-            $ruleClass = $this->toCamelCase($rule);
-            $arguments = [];
-        }
-
-        return [$ruleClass, $value, $arguments];
-    }
 
     private function runModifier(string $modifier)
     {
         [$method, $params] = $this->parseFunction($modifier);
         
-        if ($method == 'each') {
-            return $method;
-        } elseif (method_exists($this, $method)) {
+        if (method_exists($this, $method)) {
             return call_user_func_array([$this, $method], $params);
         } else {
             throw new InvalidArgumentException('Modifier method "'.$method.'" not found.');
@@ -134,14 +168,14 @@ trait ParsesValidationDSL
             if (')' != substr($function, -1)) {
                 throw new InvalidArgumentException('Missing ")" in function "'.$function.'"');
             }
-            [$functionName, $arguments] = explode('(', $function, 2);
+            [$function_name, $arguments] = explode('(', $function, 2);
             $arguments = explode(',', rtrim($arguments, ')'));
         } else {
-            $functionName = $function;
+            $function_name = $function;
             $arguments = [];
         }
-
-        return [$functionName, $arguments];
+        
+        return [$function_name, $arguments];
     }
 
     private function count(): int

@@ -216,6 +216,7 @@ class ApiTest extends TestSuite
         ];
         
         $response = $this->request('PUT', '/recipes/1', $this->newRecipe, $header);
+        
         $this->assertHeaders($response);
         
         $input = json_decode($this->newRecipe, true);
@@ -253,8 +254,35 @@ class ApiTest extends TestSuite
     public function test_edit_recipe_part()
     {
         echo 'API test: PATCH /recipes/{id} and edit part of the given recipe';
-
-        $this->markTestIncomplete('Auth not implemented yet.');
+        
+        $header = [
+            'authorization' => [$this->get_valid_token()],
+        ];
+        
+        $patch = [
+            'recipe' => [
+                'name' => 'A beautiful name! Only the name.'
+            ]
+        ];
+        
+        $response = $this->request('PATCH', '/recipes/1', json_encode($patch), $header);
+        
+        $this->assertHeaders($response);
+        
+        $recipe = Recipe::find(1);
+        
+        // We changed only the name
+        $this->assertEquals('A beautiful name! Only the name.', $recipe->name);
+        
+        // The rest should be the default
+        $this->assertEquals($recipe->created_by, 2);
+        $this->assertEquals($recipe->subtitle, 'Test Recipe by Luigi Risotto');
+        $this->assertEquals($recipe->description, 'TESTING');
+        $this->assertEquals($recipe->prep_time, 10);
+        $this->assertEquals($recipe->total_time, 20);
+        $this->assertEquals($recipe->vegetarian, 1);
+        $this->assertEquals($recipe->difficulty, 1);
+        $this->assertEquals($recipe->picture, 'https://example.com/example.jpg');
     }
 
     public function test_delete_recipe()
