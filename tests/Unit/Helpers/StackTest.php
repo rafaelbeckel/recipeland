@@ -9,7 +9,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Recipeland\Controllers\Errors;
 use InvalidArgumentException;
 use GuzzleHttp\Psr7\Response;
-use Recipeland\Stack;
+use Recipeland\Helpers\Stack;
 use Tests\TestSuite;
 
 class StackTest extends TestSuite
@@ -173,12 +173,5 @@ class StackTest extends TestSuite
         $stack = new class($this->f, ['not_a_middleware']) extends Stack {
         };
         $response = $stack->handle($request);
-    }
-
-    public function test_last()
-    {
-        $beer = "\u{1F37A} ";
-        echo 'ALL TESTS FINISHED! '.$beer.$beer.$beer;
-        $this->assertTrue(true);
     }
 }

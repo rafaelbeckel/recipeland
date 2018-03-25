@@ -7,8 +7,8 @@ use GuzzleHttp\Psr7\ServerRequest as Request;
 use Recipeland\Interfaces\RouterInterface;
 use Recipeland\Interfaces\SenderInterface;
 use Psr\Http\Message\ResponseInterface;
+use Recipeland\Helpers\Stack;
 use Recipeland\Config;
-use Recipeland\Stack;
 use Tests\TestSuite;
 use Recipeland\App;
 

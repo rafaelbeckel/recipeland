@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Recipeland;
+namespace Recipeland\Helpers;
 
 use GuzzleHttp\Psr7\Response;
 use InvalidArgumentException;

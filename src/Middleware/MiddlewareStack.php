@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Recipeland\Middleware;
 
-use Recipeland\Stack;
+use Recipeland\Helpers\Stack;
 
 class MiddlewareStack extends Stack
 {
