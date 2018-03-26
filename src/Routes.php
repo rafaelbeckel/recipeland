@@ -15,6 +15,7 @@ class Routes
         
         $this->add( 'GET',    '/recipes',             'Recipes.list'         );
         $this->add( 'POST',   '/recipes',             'Recipes.create'       );
+        $this->add( 'GET',    '/recipes/search',      'Recipes.search'       );
         $this->add( 'GET',    '/recipes/{id}',        'Recipes.read'         );
         $this->add( 'PUT',    '/recipes/{id}',        'Recipes.update'       );
         $this->add( 'PATCH',  '/recipes/{id}',        'Recipes.updateFields' );

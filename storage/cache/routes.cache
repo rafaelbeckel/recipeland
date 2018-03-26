@@ -5,6 +5,7 @@
     array (
       '' => 'Main.home',
       '/recipes' => 'Recipes.list',
+      '/recipes/search' => 'Recipes.search',
     ),
     'POST' => 
     array (

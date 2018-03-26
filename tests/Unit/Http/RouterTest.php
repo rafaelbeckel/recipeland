@@ -203,4 +203,11 @@ class RouterTest extends TestSuite
         // Let's call our router
         $router->getControllerFor($request);
     }
+    
+    public function test_last()
+    {
+        $beer = "\u{1F37A} ";
+        echo "\n\nALL TESTS FINISHED! ".$beer.$beer.$beer;
+        $this->assertTrue(true);
+    }
 }

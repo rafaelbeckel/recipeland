@@ -14,6 +14,7 @@ use Recipeland\Data\Ingredient;
 use Recipeland\Traits\CooksRecipes;
 use Illuminate\Database\QueryException;
 use Recipeland\Http\Request\RateRecipeRequest;
+use Recipeland\Http\Request\SearchRecipeRequest;
 use Recipeland\Http\Request\CreateRecipeRequest;
 use Recipeland\Http\Request\UpdateRecipeRequest;
 use Recipeland\Http\Request\DeleteRecipeRequest;
@@ -37,17 +38,8 @@ class Recipes extends Controller
      **/
     public function list(Request $request)
     {
-        $page = $request->getQueryParam('page', 1);
-
-        $recipe = Recipe::with('ingredients', 'steps', 'author')
-                        ->paginate(
-                            self::RESULTS_PER_PAGE,
-                            self::QUERY_COLUMNS,
-                            self::PAGE_NAME,
-                            $page
-                        );
-
-        $this->setJsonResponse($recipe->toArray());
+        $recipes = $this->getRecipeFromCacheOrDB($request);
+        $this->setJsonResponse($recipes->toArray());
     }
 
     /**
@@ -217,6 +209,56 @@ class Recipes extends Controller
         ]);
     }
     
+    /**
+     * @description
+     * Searches the recipes
+     *
+     * @params ServerRequestInterface
+     * @params integer $id
+     **/
+    public function search(SearchRecipeRequest $request)
+    {
+        $page = $request->getQueryParam('page', 1);
+        $input = $request->getQueryParam('query', null);
+        $author = $request->getQueryParam('author', null);
+        $prep_time = $request->getQueryParam('prep_time', null);
+        $total_time = $request->getQueryParam('total_time', null);
+        $vegetarian = $request->getQueryParam('vegetarian', null);
+        $difficulty = $request->getQueryParam('difficulty', null);
+        
+        $users = User::where('name', 'ilike', '%'.$author.'%')->pluck('id')->toArray();
+        
+        $results = Recipe::with('ingredients', 'steps', 'author')
+            ->where(function ($q) use ($input) {
+                return $q->orWhere('name', 'ilike', '%'.$input.'%')
+                         ->orWhere('subtitle', 'ilike', '%'.$input.'%')
+                         ->orWhere('description', 'ilike', '%'.$input.'%');
+            })
+            ->when($users, function ($q) use ($users) {
+                return $q->whereIn('created_by', $users);
+            })
+            ->when(!is_null($vegetarian), function ($q) use ($vegetarian) {
+                return $q->where('vegetarian', $vegetarian);
+            })
+            ->when(!is_null($difficulty), function ($q) use ($difficulty) {
+                return $this->addFilters('difficulty', $difficulty, $q);
+            })
+            ->when(!is_null($prep_time), function ($q) use ($prep_time) {
+                return $this->addFilters('prep_time', $prep_time, $q);
+            })
+            ->when(!is_null($total_time), function ($q) use ($total_time) {
+                return $this->addFilters('total_time', $total_time, $q);
+            })
+            ->paginate(
+                self::RESULTS_PER_PAGE,
+                self::QUERY_COLUMNS,
+                self::PAGE_NAME,
+                $page
+            );
+        
+        $this->setJsonResponse($results->toArray());
+    }
+    
     
     /**
      * A helper method to check token's permission
@@ -231,6 +273,32 @@ class Recipes extends Controller
                    (!$is_author && ($can[$action.'_all_recipes'] ?? false));
         
         return $proceed;
+    }
+    
+    private function getRecipeFromCacheOrDB(Request $request)
+    {
+        $force = $request->getQueryParam('force', false);
+        $page = $request->getQueryParam('page', 1);
+        $cache = $request->getAttribute('cache');
+        
+        if ($cache && !$force) {
+            return $cache->tags(['recipes_pages'])
+                         ->rememberForever('recipes_page'.$page, function () use ($page) {
+                             return $this->getRecipesFromPage($page);
+                         });
+        } else {
+            return $this->getRecipesFromPage($page);
+        }
+    }
+    
+    private function getRecipesFromPage($page)
+    {
+        return Recipe::with('ingredients', 'steps', 'author')->paginate(
+            self::RESULTS_PER_PAGE,
+            self::QUERY_COLUMNS,
+            self::PAGE_NAME,
+            $page
+        );
     }
     
     private function checkCredentialsAndUpdate(RequestInterface $request, $id, array $options)
@@ -257,5 +325,29 @@ class Recipes extends Controller
         }
 
         $this->setJsonResponse($recipe->toArray());
+    }
+    
+    private function addFilters($key, $value, &$query)
+    {
+        if (is_numeric($value)) {
+            $query->where($key, $value);
+        } else {
+            $json = json_decode($value, true);
+            $gt = $json['gt'] ?? null;
+            $lt = $json['lt'] ?? null;
+            $gte = $json['gte'] ?? null;
+            $lte = $json['lte'] ?? null;
+            if ($json) {
+                $query->when($gt, function ($q) use ($key, $gt) {
+                    return $q->where($key, '>', $gt);
+                })->when($lt, function ($q) use ($key, $lt) {
+                    return $q->where($key, '<', $lt);
+                })->when($gte, function ($q) use ($key, $gte) {
+                    return $q->where($key, '>=', $gte);
+                })->when($lte, function ($q) use ($key, $lte) {
+                    return $q->where($key, '<=', $lte);
+                });
+            }
+        }
     }
 }

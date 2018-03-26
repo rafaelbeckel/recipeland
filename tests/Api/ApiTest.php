@@ -6,6 +6,7 @@ namespace Tests\Api;
 
 use Recipeland\App;
 use Tests\TestSuite;
+use GuzzleHttp\Psr7\Uri;
 use Phinx\Config\Config;
 use Recipeland\Data\Step;
 use Recipeland\Data\User;
@@ -46,8 +47,8 @@ class ApiTest extends TestSuite
         'path' => '/',
         'per_page' => 10,
         'prev_page_url' => null,
-        'to' => 2,
-        'total' => 2,
+        'to' => 4,
+        'total' => 4,
     ];
     
     protected $newRecipe = '{
@@ -112,7 +113,17 @@ class ApiTest extends TestSuite
         $this->expected['data'] = [
             Recipe::with('ingredients', 'steps', 'author')->find(1)->toArray(),
             Recipe::with('ingredients', 'steps', 'author')->find(2)->toArray(),
+            Recipe::with('ingredients', 'steps', 'author')->find(3)->toArray(),
+            Recipe::with('ingredients', 'steps', 'author')->find(4)->toArray(),
         ];
+    }
+    
+    public function test_block_insecure_requests()
+    {
+        echo 'API test: block insecure http requests - returns 403';
+        
+        $response = $this->request('GET', '/recipes', null, [], 'http');
+        $this->assertHeaders($response, 403);
     }
     
     public function test_list_recipes()
@@ -127,7 +138,7 @@ class ApiTest extends TestSuite
     
     public function test_login()
     {
-        echo 'API test: POST /login and receive a JWT';
+        echo 'API test: POST /login - returns a JWT';
         
         $response = $this->login();
         $this->assertEquals('{"status":"Authorized"}', (string) $response->getBody());
@@ -137,7 +148,7 @@ class ApiTest extends TestSuite
     
     public function test_login_wrong_password()
     {
-        echo 'API test: POST /login with wrong password and receive 401';
+        echo 'API test: POST /login with wrong password - returns 401';
         
         $response = $this->login('luigi', 'Wrong-Password-123');
         $this->assertEquals('{"error":"Unauthorized"}', (string) $response->getBody());
@@ -156,12 +167,12 @@ class ApiTest extends TestSuite
         $this->assertHeaders($response);
         
         $input = json_decode($this->newRecipe, true);
-        $recipe = Recipe::with('ingredients', 'steps')->find(3)->toArray(); //new Recipe will have ID 3
+        $recipe = Recipe::with('ingredients', 'steps')->find(5)->toArray(); //new Recipe will have ID 5
         
         // Adapt values for deep comparison
         $input['recipe']['created_by'] = 2;
-        $input['recipe']['difficulty'] = '3';
         $input['recipe']['vegetarian'] = true;
+        $input['recipe']['rating'] = 'not rated yet';
         foreach ($recipe['ingredients'] as $key => $value) {
             $recipe['ingredients'][$key]['quantity'] = $value['details']['quantity'];
             $recipe['ingredients'][$key]['unit'] = $value['details']['unit'];
@@ -225,8 +236,8 @@ class ApiTest extends TestSuite
         
         // Adapt values for deep comparison
         $input['recipe']['created_by'] = 2;
-        $input['recipe']['difficulty'] = '3';
         $input['recipe']['vegetarian'] = true;
+        $input['recipe']['rating'] = 'not rated yet';
         foreach ($recipe['ingredients'] as $key => $value) {
             $recipe['ingredients'][$key]['quantity'] = $value['details']['quantity'];
             $recipe['ingredients'][$key]['unit'] = $value['details']['unit'];
@@ -242,7 +253,7 @@ class ApiTest extends TestSuite
     
     public function test_edit_not_my_recipe()
     {
-        echo 'API test: PUT /recipes/{id} not owned by user - Receives 403';
+        echo 'API test: PUT /recipes/{id} not owned by user - returns 403';
         
         $header = [
             'authorization' => [$this->get_valid_token()],
@@ -311,7 +322,7 @@ class ApiTest extends TestSuite
     
     public function test_delete_not_my_recipe()
     {
-        echo 'API test: DELETE /recipes/{id} not owned by user - Receives 403';
+        echo 'API test: DELETE /recipes/{id} not owned by user - returns 403';
         
         $header = [
             'authorization' => [$this->get_valid_token()],
@@ -348,7 +359,7 @@ class ApiTest extends TestSuite
     
     public function test_create_rating_own_recipe()
     {
-        echo 'API test: POST /recipes/{id}/rating to own recipe - get 403';
+        echo 'API test: POST /recipes/{id}/rating to own recipe - returns 403';
 
         $header = [
             'authorization' => [$this->get_valid_token()],
@@ -361,10 +372,76 @@ class ApiTest extends TestSuite
         $response = $this->request('POST', '/recipes/1/rating', json_encode($rating), $header);
         $this->assertHeaders($response, 403);
     }
+    
+    public function test_search()
+    {
+        echo 'API test: GET /recipes/search?query=... search by keyword';
+        
+        $response = $this->request('GET', '/recipes/search?query=Foo');
+        $responseArray = $this->jsonToArray($response);
+        
+        $this->assertArraySubset(['name' => 'Test Recipe Fooo'], $responseArray['data'][0]);
+        $this->assertHeaders($response);
+    }
+    
+    public function test_search_by_author()
+    {
+        echo 'API test: GET /recipes/search?author=... search by author';
+        
+        $response = $this->request('GET', '/recipes/search?author=Luigi');
+        $responseArray = $this->jsonToArray($response);
+        
+        $this->assertArraySubset(['created_by' => 2], $responseArray['data'][0]);
+        $this->assertHeaders($response);
+    }
+    
+    public function test_search_difficulty_and_vegetarian()
+    {
+        echo 'API test: GET /recipes/search?difficulty={n}&?vegetarian={n} filter properties';
+        
+        $response = $this->request('GET', '/recipes/search?difficulty=1&?vegetarian=1');
+        $responseArray = $this->jsonToArray($response);
+        
+        $this->assertCount(2, $responseArray['data']);
+        $this->assertHeaders($response);
+    }
+    
+    public function test_search_by_prep_time_and_total_time()
+    {
+        echo 'API test: GET /recipes/search?prep_time={n}&?total_time={n} search by time';
+        
+        $response = $this->request('GET', '/recipes/search?prep_time=10&total_time=20');
+        $responseArray = $this->jsonToArray($response);
+        
+        $this->assertCount(1, $responseArray['data']);
+        $this->assertHeaders($response);
+    }
+    
+    public function test_search_by_subqueries_gt_lt()
+    {
+        echo 'API test: GET /recipes/search?prep_time={"gt":{n},"lt":{n}} search by subqueries gt lt';
+        
+        $response = $this->request('GET', '/recipes/search?prep_time={"gt":9,"lt":20}');
+        $responseArray = $this->jsonToArray($response);
+        
+        $this->assertCount(2, $responseArray['data']);
+        $this->assertHeaders($response);
+    }
+    
+    public function test_search_by_subqueries_gte_lte()
+    {
+        echo 'API test: GET /recipes/search?prep_time={"gte":{n},"lte":{n}} search by subqueries gte lte';
+        
+        $response = $this->request('GET', '/recipes/search?total_time={"gte":35,"lte":35}');
+        $responseArray = $this->jsonToArray($response);
+        
+        $this->assertCount(1, $responseArray['data']);
+        $this->assertHeaders($response);
+    }
 
     public function test_404()
     {
-        echo 'API test: GET /recipes/non/existent/route and receive 404 - Not Found';
+        echo 'API test: GET /recipes/non/existent/route - returns 404 - Not Found';
 
         $response = $this->request('GET', '/recipes/non/existent/route');
         $responseArray = $this->jsonToArray($response);
@@ -374,7 +451,7 @@ class ApiTest extends TestSuite
 
     public function test_405()
     {
-        echo 'API test: GET /recipes/{id}/rating and receive 405 - Method Not Allowed';
+        echo 'API test: DELETE /recipes/{id}/rating - returns 405 - Method Not Allowed';
 
         $response = $this->request('DELETE', '/recipes/1/rating');
         $responseArray = $this->jsonToArray($response);
@@ -387,10 +464,17 @@ class ApiTest extends TestSuite
     /***********************************************************************
      *                       API HELPER METHODS                            *
      ***********************************************************************/
-    private function request(string $method, string $path, string $body = null, array $headers = []): ResponseInterface
-    {
-        $request = (new Request($method, $this->url.$path, $headers, $body))->withHeader('x-forwarded-proto', 'https');
-        
+    private function request(
+        string $method,
+        string $path,
+        string $body = null,
+        array $headers = [],
+        string $scheme = 'https'
+    ): ResponseInterface {
+        $uri = new Uri($this->url.$path);
+        parse_str($uri->getQuery(), $query);
+        $request = (new Request($method, $uri, $headers, $body))->withHeader('x-forwarded-proto', $scheme)
+                                                                ->withQueryParams($query);
         $app = $this->container->get(App::class);
         $response = $app->go($request);
         
@@ -487,8 +571,10 @@ class ApiTest extends TestSuite
         ];
 
         $recipes = [
-            $this->createRecipe($authors[0], 'Fooo'),
-            $this->createRecipe($authors[1], 'Baar'),
+            $this->createRecipe($authors[0], 'Fooo', 10, 20, 1, 1),
+            $this->createRecipe($authors[1], 'Baar', 15, 25, 1, 1),
+            $this->createRecipe($authors[0], 'Baaz', 20, 30, 0, 2),
+            $this->createRecipe($authors[1], 'Biim', 25, 35, 1, 3),
         ];
 
         $ingredients = [
@@ -509,18 +595,24 @@ class ApiTest extends TestSuite
         }
     }
 
-    private function createRecipe(User $author, string $name)
-    {
+    private function createRecipe(
+        User $author,
+        string $name,
+        int $prep_time,
+        int $total_time,
+        int $vegetarian,
+        int $difficulty
+    ) {
         return Recipe::firstOrCreate(
             ['name' => 'Test Recipe '.$name],
             [
                 'created_by' => $author->id,
                 'subtitle' => 'Test Recipe by '.$author->name,
                 'description' => 'TESTING',
-                'prep_time' => 10,
-                'total_time' => 20,
-                'vegetarian' => 1,
-                'difficulty' => 1,
+                'prep_time' => $prep_time,
+                'total_time' => $total_time,
+                'vegetarian' => $vegetarian,
+                'difficulty' => $difficulty,
                 'picture' => 'https://example.com/example.jpg',
             ]
         );

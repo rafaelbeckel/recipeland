@@ -19,6 +19,11 @@ class User extends Model
         SoftDeletes::restore as sfRestore;
         EntrustUserTrait::restore as euRestore;
     }
+    
+    public function ratings()
+    {
+        return $this->hasMany('Recipeland\Data\Rating');
+    }
 
     public function restore(): void
     {

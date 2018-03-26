@@ -11,7 +11,21 @@ class Rating extends Model
     
     protected $primaryKey = ['user_id', 'recipe_id'];
     
+    protected $casts = [
+        'rating' => 'float',
+    ];
+    
     public $timestamps = false;
+    
+    public function author()
+    {
+        return $this->belongsTo('Recipeland\Data\User', 'user_id');
+    }
+    
+    public function recipe()
+    {
+        return $this->belongsTo('Recipeland\Data\Recipe', 'recipe_id');
+    }
     
     public static function average($id): ?array
     {
@@ -20,7 +34,7 @@ class Rating extends Model
             return null;
         }
         
-        $sum = 0.0;
+        $sum = 0.0; //cannot aggregate because it's an enum of strings
         $ratings = Rating::where('recipe_id', $id)->get();
         foreach ($ratings as $rating) {
             $sum += floatval($rating->rating);
@@ -28,7 +42,7 @@ class Rating extends Model
         
         return [
             'count' => $count,
-            'average' => number_format($sum/$count, 1)
+            'average' => floatval(number_format($sum/$count, 1))
         ];
     }
 }
