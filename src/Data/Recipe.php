@@ -77,12 +77,18 @@ class Recipe extends Model
         return parent::save($options);
     }
     
+    /**
+     * @codeCoverageIgnore
+     */
     public function delete()
     {
         $this->clearCache();
         return parent::delete();
     }
     
+    /**
+     * @codeCoverageIgnore
+     */
     private function clearCache()
     {
         Cache::tags(['recipes_pages'])->flush();

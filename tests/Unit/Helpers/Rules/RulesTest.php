@@ -17,6 +17,7 @@ use Recipeland\Helpers\Rules\IsJwt;
 use Recipeland\Helpers\Rules\IsUrl;
 use Recipeland\Helpers\Rules\Min;
 use Recipeland\Helpers\Rules\Max;
+use BadMethodCallException;
 use Tests\TestSuite;
 
 class RulesTest extends TestSuite
@@ -35,6 +36,12 @@ class RulesTest extends TestSuite
         $this->assertTrue($equals->apply('key1', '!=', 'key2'));
         $this->assertTrue($equals->apply('key1', '!==', 'key2'));
         $this->assertFalse($equals->apply('key1', '===', 'key2'));
+        
+        $this->expectException(BadMethodCallException::class);
+        $equals->apply('key1', '==');
+        
+        $invalid = new Compare(['key1'=>'foo', 'key2'=>'foo']);
+        $this->assertFalse($equals->apply('key1', '==', 'key2'));
     }
     
     public function test_rule_equals()
@@ -70,6 +77,9 @@ class RulesTest extends TestSuite
         $this->assertTrue($isbetween->apply(5, 5));
         $this->assertFalse($isbetween->apply(4, 4));
         $this->assertFalse($isbetween->apply(6, 6));
+        
+        $this->expectException(BadMethodCallException::class);
+        $isbetween->apply(1);
     }
     
     public function test_rule_min()
@@ -81,6 +91,9 @@ class RulesTest extends TestSuite
         $this->assertTrue($min->apply(5));  // min. 5
         $this->assertTrue($min->apply(4));  // min. 4
         $this->assertFalse($min->apply(6)); // min. 6
+        
+        $this->expectException(BadMethodCallException::class);
+        $min->apply(1, 2);
     }
     
     public function test_rule_max()
@@ -92,6 +105,9 @@ class RulesTest extends TestSuite
         $this->assertTrue($max->apply(5));  // max. 5
         $this->assertTrue($max->apply(6));  // max. 6
         $this->assertFalse($max->apply(4)); // max. 4
+        
+        $this->expectException(BadMethodCallException::class);
+        $max->apply(1, 2);
     }
 
     public function test_rule_is_http_method()

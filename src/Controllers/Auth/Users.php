@@ -47,21 +47,23 @@ class Users extends Controller
         
         $signer = new Sha512();
         $keychain = new Keychain();
-        $token = (new Builder())->setIssuer(getenv('JWT_ISSUER'))
-                                ->setAudience(getenv('JWT_AUDIENCE'))
-                                ->setId($user->username.' '.$user->updated_at)
-                                ->setIssuedAt(time())
-                                ->setNotBefore(time())
-                                ->setExpiration(time()+getenv('JWT_EXPIRATION_TIME'))
-                                ->set('user_id', $user->id)
-                                ->set('permissions', $permissions)
-                                ->set('roles', $roles)
-                                ->sign(
-                                    $signer, 
-                                    $keychain->getPrivateKey(
-                                        'file://'.BASE_DIR.getenv('PRIVATE_KEY')
-                                    ))
-                                ->getToken();
+        $token = (new Builder())
+            ->setIssuer(getenv('JWT_ISSUER'))
+            ->setAudience(getenv('JWT_AUDIENCE'))
+            ->setId($user->username.' '.$user->updated_at)
+            ->setIssuedAt(time())
+            ->setNotBefore(time() + 2) //match user updated_at precision
+            ->setExpiration(time()+getenv('JWT_EXPIRATION_TIME'))
+            ->set('user_id', $user->id)
+            ->set('permissions', $permissions)
+            ->set('roles', $roles)
+            ->sign(
+                $signer,
+                $keychain->getPrivateKey(
+                    'file://'.BASE_DIR.getenv('PRIVATE_KEY')
+                )
+            )
+            ->getToken();
         
         $user->timestamps = false; // Disable autosaving timestamps
         $user->save();

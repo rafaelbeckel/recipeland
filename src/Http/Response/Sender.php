@@ -46,6 +46,9 @@ class Sender implements SenderInterface
         echo (string) $this->response->getBody();
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     protected function clearBuffers()
     {
         if (function_exists('fastcgi_finish_request')) {
@@ -54,7 +57,10 @@ class Sender implements SenderInterface
             $this->closeOutputBuffers();
         }
     }
-
+    
+    /**
+     * @codeCoverageIgnore
+     */
     private function closeOutputBuffers()
     {
         if (ob_get_level()) {

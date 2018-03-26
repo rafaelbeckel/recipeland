@@ -15,12 +15,8 @@ class Permission extends EntrustPermission
         if (is_object($role)) {
             $role = $role->getKey();
         }
-
-        if (is_array($role)) {
-            $role = $role['id'];
-        }
         
-        if (! $this->roles()->where('role_id', $role)->count()) {
+        if (!$this->roles()->where('role_id', $role)->count()) {
             $this->roles()->attach($role);
         }
     }

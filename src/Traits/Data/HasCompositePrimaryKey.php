@@ -20,16 +20,18 @@ trait HasCompositePrimaryKey
     /**
      * Set the keys for a save update query.
      *
+     * @codeCoverageIgnore
      * @param  \Illuminate\Database\Eloquent\Builder $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
     protected function setKeysForSaveQuery(Builder $query)
     {
         foreach ($this->getKeyName() as $key) {
-            if (isset($this->$key))
+            if (isset($this->$key)) {
                 $query->where($key, '=', $this->$key);
-            else
+            } else {
                 throw new Exception(__METHOD__ . 'Missing part of the primary key: ' . $key);
+            }
         }
 
         return $query;
@@ -38,6 +40,7 @@ trait HasCompositePrimaryKey
     /**
      * Execute a query for a single record by ID.
      *
+     * @codeCoverageIgnore
      * @param  array  $ids Array of keys, like [column => value].
      * @param  array  $columns
      * @return mixed|static

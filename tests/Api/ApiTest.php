@@ -6,17 +6,14 @@ namespace Tests\Api;
 
 use Recipeland\App;
 use Tests\TestSuite;
+use Tests\Api\SeedsData;
 use GuzzleHttp\Psr7\Uri;
-use Phinx\Config\Config;
 use Recipeland\Data\Step;
 use Recipeland\Data\User;
 use Recipeland\Data\Recipe;
 use Recipeland\Data\Rating;
 use Phinx\Seed\AbstractSeed;
-use Phinx\Wrapper\TextWrapper;
 use Recipeland\Data\Ingredient;
-use Recipeland\Data\Permission;
-use Phinx\Console\PhinxApplication;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Psr7\ServerRequest as Request;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -27,70 +24,17 @@ use Symfony\Component\Console\Output\StreamOutput;
  * an actual request. It tests only the application, not the
  * reverse proxy configuration, but it's atill an integration
  * test, because we are also testing the DB and the Cache layers.
+ *
+ * @group slow
  */
 class ApiTest extends TestSuite
 {
+    use SeedsData;
+    
     const JWT_PATTERN = '|^(Bearer\s)([A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+\/=]*[^\.]+)$|';
     
     protected $url;
     protected $container;
-    protected $reset = true;
-    
-    protected $expected = [
-        'current_page' => 1,
-        'data' => [],
-        'first_page_url' => '/?page=1',
-        'from' => 1,
-        'last_page' => 1,
-        'last_page_url' => '/?page=1',
-        'next_page_url' => null,
-        'path' => '/',
-        'per_page' => 10,
-        'prev_page_url' => null,
-        'to' => 4,
-        'total' => 4,
-    ];
-    
-    protected $newRecipe = '{
-        "recipe" : {
-            "name" : "My Most delicious Recipe!",
-            "subtitle" : "My subtitle",
-            "description" : "My description",
-            "prep_time" : 10,
-            "total_time" : 20,
-            "vegetarian" : 1,
-            "difficulty" : 3,
-            "picture" : "https://example.com/picture.jpg",
-            "ingredients" : [
-                {
-                    "slug" : "my_ingredient",
-                    "quantity" : "12",
-                    "unit" : "mg",
-                    "name" : "My Ingredient",
-                    "picture" : "https://example.com/picture.jpg",
-                    "allergens" : "milk"
-                },
-                {
-                    "slug" : "my_second_ingredient",
-                    "quantity" : "10",
-                    "unit" : "ml",
-                    "name" : "My Second Ingredient",
-                    "picture" : "https://example.com/picture.jpg",
-                    "allergens" : "none"
-                }
-            ],
-            "steps" : [
-                {
-                    "description" : "Put ingredient somewhere",
-                    "picture" : "https://example.com/picture.jpg"
-                },
-                {
-                    "description" : "Eat Ingredient",
-                    "picture" : "https://example.com/picture.jpg"
-                }
-            ]
-        }
-    }';
     
     /**
      * Destroy and recreate the database for every test
@@ -124,6 +68,15 @@ class ApiTest extends TestSuite
         
         $response = $this->request('GET', '/recipes', null, [], 'http');
         $this->assertHeaders($response, 403);
+    }
+    
+    public function test_home()
+    {
+        echo 'API test: GET / returns OK';
+
+        $response = $this->request('GET', '/');
+        $this->assertHeaders($response);
+        $this->assertEquals('{"Recipeland":"OK!"}', (string) $response->getBody());
     }
     
     public function test_list_recipes()
@@ -163,6 +116,8 @@ class ApiTest extends TestSuite
             'authorization' => [$this->get_valid_token()],
         ];
         
+        sleep(2);
+        
         $response = $this->request('POST', '/recipes', $this->newRecipe, $header);
         $this->assertHeaders($response);
         
@@ -198,6 +153,43 @@ class ApiTest extends TestSuite
         $this->assertArraySubset(['error' => 'Bad Request'], json_decode((string) $response->getBody(), true));
         $this->assertHeaders($response, 400);
     }
+    
+    public function test_create_recipe_with_invalid_claims()
+    {
+        echo 'API test: POST /recipes with invalid claims - returns 401';
+        
+        $header = [
+            'authorization' => [$this->get_valid_token()],
+        ];
+        
+        // Do not wait - get invalid claim
+        
+        $response = $this->request('POST', '/recipes', $this->newRecipe, $header);
+        
+        $this->assertArraySubset(['error' => 'Unauthorized'], json_decode((string) $response->getBody(), true));
+        $this->assertHeaders($response, 401);
+    }
+    
+    public function test_create_recipe_with_old_token()
+    {
+        echo 'API test: POST /recipes with old_token - returns 401';
+        
+        $header = [
+            'authorization' => [$this->get_valid_token()],
+        ];
+        
+        sleep(2);
+        
+        // User changed but still owns a valid token
+        $user = User::find(2);
+        $user->name = 'Roberto';
+        $user->save();
+        
+        $response = $this->request('POST', '/recipes', $this->newRecipe, $header);
+        
+        $this->assertArraySubset(['error' => 'Unauthorized'], json_decode((string) $response->getBody(), true));
+        $this->assertHeaders($response, 401);
+    }
 
     public function test_get_recipe_1()
     {
@@ -226,6 +218,8 @@ class ApiTest extends TestSuite
         $header = [
             'authorization' => [$this->get_valid_token()],
         ];
+        
+        sleep(2);
         
         $response = $this->request('PUT', '/recipes/1', $this->newRecipe, $header);
         
@@ -259,6 +253,8 @@ class ApiTest extends TestSuite
             'authorization' => [$this->get_valid_token()],
         ];
         
+        sleep(2);
+        
         $response = $this->request('PUT', '/recipes/2', $this->newRecipe, $header);
         $this->assertHeaders($response, 403);
     }
@@ -276,6 +272,8 @@ class ApiTest extends TestSuite
                 'name' => 'A beautiful name! Only the name.'
             ]
         ];
+        
+        sleep(2);
         
         $response = $this->request('PATCH', '/recipes/1', json_encode($patch), $header);
         
@@ -305,6 +303,8 @@ class ApiTest extends TestSuite
             'authorization' => [$this->get_valid_token()],
         ];
         
+        sleep(2);
+        
         $response = $this->request('DELETE', '/recipes/1', '', $header);
         
         $this->assertEquals(
@@ -328,6 +328,8 @@ class ApiTest extends TestSuite
             'authorization' => [$this->get_valid_token()],
         ];
         
+        sleep(2);
+        
         $response = $this->request('DELETE', '/recipes/2', '', $header);
         $this->assertHeaders($response, 403);
     }
@@ -343,6 +345,8 @@ class ApiTest extends TestSuite
         $rating = [
             'rating' => 5
         ];
+        
+        sleep(2);
         
         $response = $this->request('POST', '/recipes/2/rating', json_encode($rating), $header);
         $this->assertHeaders($response);
@@ -368,6 +372,8 @@ class ApiTest extends TestSuite
         $rating = [
             'rating' => 5
         ];
+        
+        sleep(2);
         
         $response = $this->request('POST', '/recipes/1/rating', json_encode($rating), $header);
         $this->assertHeaders($response, 403);
@@ -526,117 +532,5 @@ class ApiTest extends TestSuite
                 $this->recursive_unset($value, $unwanted_key);
             }
         }
-    }
-    
-    
-    
-    /***********************************************************************
-     *                       DATABASE SEEDING METHODS                      *
-     ***********************************************************************/
-    private function database($command, $what=null)
-    {
-        if (getenv('ENVIRONMENT') == 'testing' &&
-           getenv('DB_CONNECTION') == 'pgtest') {
-            $phinx = new PhinxApplication();
-            $wrapper = new TextWrapper($phinx);
-            $wrapper->setOption('configuration', BASE_DIR.'/phinx.php');
-            $wrapper->setOption('environment', 'testing');
-            $wrapper->setOption('parser', 'PHP');
-            
-            switch ($command) {
-                case 'migrate':
-                    $wrapper->getMigrate();
-                    break;
-                    
-                case 'seed':
-                    if ($what == 'users') {
-                        $wrapper->getSeed(null, null, 'AclSeeder');
-                    } elseif ($what == 'recipes') {
-                        $this->createRecipes();
-                    }
-                    break;
-                    
-                case 'rollback':
-                    $wrapper->getRollback(null, 0);
-                    break;
-            }
-        }
-    }
-    
-    private function createRecipes()
-    {
-        $authors = [
-            User::where('username', 'luigi')->first(),
-            User::where('username', 'burns')->first(),
-        ];
-
-        $recipes = [
-            $this->createRecipe($authors[0], 'Fooo', 10, 20, 1, 1),
-            $this->createRecipe($authors[1], 'Baar', 15, 25, 1, 1),
-            $this->createRecipe($authors[0], 'Baaz', 20, 30, 0, 2),
-            $this->createRecipe($authors[1], 'Biim', 25, 35, 1, 3),
-        ];
-
-        $ingredients = [
-            $this->createIngredient('Lola'),
-            $this->createIngredient('Lula'),
-        ];
-
-        $steps = [
-            $this->createStep('Do something'),
-            $this->createStep('Go home'),
-        ];
-
-        foreach ($recipes as $recipe) {
-            $recipe->attachIngredient($ingredients[0], '123', 'mg');
-            $recipe->attachIngredient($ingredients[1], '456', 'kg');
-            $recipe->attachStep($steps[0], 1);
-            $recipe->attachStep($steps[1], 2);
-        }
-    }
-
-    private function createRecipe(
-        User $author,
-        string $name,
-        int $prep_time,
-        int $total_time,
-        int $vegetarian,
-        int $difficulty
-    ) {
-        return Recipe::firstOrCreate(
-            ['name' => 'Test Recipe '.$name],
-            [
-                'created_by' => $author->id,
-                'subtitle' => 'Test Recipe by '.$author->name,
-                'description' => 'TESTING',
-                'prep_time' => $prep_time,
-                'total_time' => $total_time,
-                'vegetarian' => $vegetarian,
-                'difficulty' => $difficulty,
-                'picture' => 'https://example.com/example.jpg',
-            ]
-        );
-    }
-
-    private function createIngredient($name)
-    {
-        return Ingredient::firstOrCreate(
-            ['slug' => str_replace(' ', '_', strtolower($name))],
-            [
-                'name' => $name,
-                'picture' => 'https://example.com/example.jpg',
-                'allergens' => 'none',
-            ]
-        );
-    }
-
-    private function createStep($description)
-    {
-        return Step::firstOrCreate(
-            ['description' => $description],
-            [
-                'picture' => 'https://example.com/example.jpg',
-            ]
-        );
     }
 }

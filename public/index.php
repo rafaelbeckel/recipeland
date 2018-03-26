@@ -31,4 +31,4 @@ $app->render($response);
 /*
  * Run background jobs
  */
-$app->close($request, $response);
+// $app->close($request, $response);

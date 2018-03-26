@@ -46,13 +46,12 @@ final class App
 
         return $this->stack->handle($request);
     }
-
+    
+    /**
+     * @codeCoverageIgnore
+     */
     public function close($request, $response)
     {
         // You can implement calls to long-running processes here
-        // Like sending e-mails,
-
-        // $this->logger->info('Look, Ma! I am running in Background!');
-        // $this->logger->info('Execution time: ');
     }
 }

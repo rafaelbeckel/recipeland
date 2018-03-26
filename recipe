@@ -34,7 +34,11 @@ show_help() {
     echo "         Same as cook, but in verbose mode"
     echo ""
     echo "        ${b} taste ${n} ( taste | test )"
-    echo "         Run all unit tests."
+    echo "         Run all unit tests and all API tests (slow)."
+    echo "         It needs a running container to work."
+    echo ""
+    echo "        ${b} devour ${n} ( devour | gobble )"
+    echo "         Run all unit tests, ignores API tests (fast)."
     echo "         It needs a running container to work."
     echo ""
     echo "        ${b} finish ${n} ( finish | stop | quit | exit )"
@@ -188,12 +192,22 @@ taste() {
     check_dependencies
     if [ $(docker inspect -f '{{.State.Running}}' recipeland_php) == "true" ]
     then
-        echo "Running PHPUnit..."
-        docker exec -it recipeland_php ./vendor/bin/phpunit
+        if [ "$1" == "fast" ]
+        then
+            echo "Running PHPUnit (Unit only. Ignoring API endpoint tests)..."
+            docker exec -it recipeland_php ./vendor/bin/phpunit --exclude slow
+        else
+            echo "Running PHPUnit..."
+            docker exec -it recipeland_php ./vendor/bin/phpunit
+        fi
     else
         echo "Container is not running! Start the application with ${b}'$ ./recipe cook'${n} first."
     fi
     echo ""
+}
+
+devour() {
+    taste "fast"
 }
 
 finish() {
@@ -217,8 +231,11 @@ case $1 in
     "boil" | "verbose" | "-v" | "--verbose" | "debug")
         boil 
         ;;
-    "taste" | "test")
+    "taste" | "test" | "eat")
         taste 
+        ;;
+    "devour" | "gobble")
+        devour 
         ;;
     "finish" | "stop" | "quit" | "exit")
         finish 

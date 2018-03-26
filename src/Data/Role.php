@@ -26,13 +26,8 @@ class Role extends EntrustRole
         if (is_object($permission)) {
             $permission = $permission->getKey();
         }
-
-        if (is_array($permission)) {
-            $permission = $permission['id'];
-        }
         
-        
-        if (! $this->permissions()->where('permission_id', $permission)->count()) {
+        if (!$this->permissions()->where('permission_id', $permission)->count()) {
             $this->permissions()->attach($permission);
         }
     }
@@ -41,10 +36,6 @@ class Role extends EntrustRole
     {
         if (is_object($user)) {
             $user = $user->getKey();
-        }
-
-        if (is_array($user)) {
-            $user = $user['id'];
         }
         
         if (! $this->users()->where('user_id', $user)->count()) {

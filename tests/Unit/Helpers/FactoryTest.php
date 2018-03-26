@@ -3,6 +3,7 @@
 namespace Tests\Unit\Helpers;
 
 use Recipeland\Helpers\Factory;
+use RuntimeException;
 use Tests\TestSuite;
 
 class FactoryTest extends TestSuite
@@ -48,5 +49,17 @@ class FactoryTest extends TestSuite
         $buildme = $factory->build('BuildMe');
 
         $this->assertEquals($buildme->sayHello(), 'Hello from local namespace!');
+    }
+    
+    public function test_build_non_existent_rule()
+    {
+        echo 'Factory - build non existent rule - throws RuntimeException';
+
+        $factory = new class() extends Factory {
+            protected $namespace = __NAMESPACE__;
+        };
+    
+        $this->expectException(RuntimeException::class);
+        $buildme = $factory->build('BuildNonExistent');
     }
 }

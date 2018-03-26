@@ -24,7 +24,10 @@ class User extends Model
     {
         return $this->hasMany('Recipeland\Data\Rating');
     }
-
+    
+    /**
+     * @codeCoverageIgnore
+     */
     public function restore(): void
     {
         $this->sfRestore();
@@ -65,10 +68,6 @@ class User extends Model
     {
         if (is_object($role)) {
             $role = $role->getKey();
-        }
-
-        if (is_array($role)) {
-            $role = $role['id'];
         }
 
         if (!$this->roles()->where('role_id', $role)->count()) {

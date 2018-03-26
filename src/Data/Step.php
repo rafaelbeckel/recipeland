@@ -13,7 +13,7 @@ class Step extends Model
     
     public function recipes()
     {
-        return $this->belongsToMany('Recipeland\Data\Recipe', 'recipe_ingredient')
+        return $this->belongsToMany('Recipeland\Data\Recipe', 'recipe_step')
                     ->withPivot('order')->as('details');
     }
 }

@@ -19,7 +19,7 @@ class SenderTest extends TestSuite
         $sender = new Sender();
 
         ob_start();
-        $sender->send($response);
+        $sender->send($response->withHeader('foo', 'bar'));
         $output = ob_get_contents();
 
         $this->assertEquals('lorem ipsum', $output);
