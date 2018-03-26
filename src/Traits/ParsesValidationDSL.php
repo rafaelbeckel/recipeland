@@ -41,7 +41,7 @@ trait ParsesValidationDSL
                     return false;
                 }
             } elseif (!$this->optional) {
-                $this->message = 'Mandatory rule is null';
+                $this->message = $this->base_rule.' -> Mandatory rule is null.';
                 return false;
             }
             
