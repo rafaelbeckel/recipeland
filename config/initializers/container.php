@@ -16,10 +16,12 @@ return function ($config) {
     $builder = new ContainerBuilder();
     $builder->useAutowiring(true);
     $builder->useAnnotations(false);
-
+    
+    // @codeCoverageIgnoreStart
     if (getenv('ENVIRONMENT') == 'production') {
         $builder->enableCompilation($config->get('cache.files.dep_inversion'));
     }
+    // @codeCoverageIgnoreEnd
 
     $builder->addDefinitions([
         // Aliases

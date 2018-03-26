@@ -23,7 +23,8 @@ return [
         $handler = new Stream($config->get('log.error.logfile'), Logger::ERROR);
         $handler->setFormatter(new Json());
         $errorLogger->pushHandler($handler);
-
+        
+        // @codeCoverageIgnoreStart
         if (getenv('ENVIRONMENT') == 'production') {
             $errorLogger->pushHandler(new Mail(
                                         $config->get('log.error.mail.to'),
@@ -31,6 +32,7 @@ return [
                                         $config->get('log.error.mail.from')
                                      ));
         }
+        // @codeCoverageIgnoreEnd
 
         return $errorLogger;
     },

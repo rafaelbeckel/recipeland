@@ -12,6 +12,7 @@ return function ($config, ScreamInterface $logger) {
     if (getenv('ENVIRONMENT') != 'production') {
         $handler->pushHandler(new PrettyPageHandler());
     } else {
+        // @codeCoverageIgnoreStart
         $handler->pushHandler(function (Throwable $e) use ($config, $logger) {
             header('Content-type: application/json;charset=utf-8');
             echo $config->get('error.default_message');
@@ -21,6 +22,7 @@ return function ($config, ScreamInterface $logger) {
 
             $logger->emergency($e->getMessage(), $e->getTrace());
         });
+        // @codeCoverageIgnoreEnd
     }
 
     return $handler;
