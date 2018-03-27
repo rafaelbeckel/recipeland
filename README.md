@@ -163,8 +163,6 @@ When creating a recipe, if an ingredient's `slug` or a step's `description` exis
 ##### Input validation:
 All keys are validated before insertion in the database. So, if you provide the incorrect type for some key, the server will respond with a `401 Unauthorized` header with the validation message in the body. 
 
-Notice that it will always respond `401` for incorrect input, even with valid tokens, because input validation occurs before user authentication (checking for token presence in the headers is part of the validation itself), so the server does not know yet who is performing the request.
-
 ### Rating recipes:
 To create a rating for a given recipe, sinply provide a `rating` key in the body:
 ```json
