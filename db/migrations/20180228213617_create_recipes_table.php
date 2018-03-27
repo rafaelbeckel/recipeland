@@ -37,6 +37,7 @@ class CreateRecipesTable extends AbstractMigration
               ->addColumn('description', 'text')
               ->addColumn('prep_time', 'integer')
               ->addColumn('total_time', 'integer')
+              ->addColumn('rating', 'float', ['null' => true])
               ->addColumn('vegetarian', 'boolean', ['default' => false])
               ->addColumn('published', 'boolean', ['default' => true])
               ->addColumn('picture', 'string')

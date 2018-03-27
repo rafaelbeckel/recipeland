@@ -2,6 +2,7 @@
 
 namespace Recipeland\Data;
 
+use Recipeland\Data\Recipe;
 use Illuminate\Database\Eloquent\Model;
 use Recipeland\Traits\Data\HasCompositePrimaryKey;
 
@@ -27,7 +28,7 @@ class Rating extends Model
         return $this->belongsTo('Recipeland\Data\Recipe', 'recipe_id');
     }
     
-    public static function average($id): ?array
+    public static function average($id): ?float
     {
         $count = Rating::where('recipe_id', $id)->count();
         if (!$count) {
@@ -40,9 +41,14 @@ class Rating extends Model
             $sum += floatval($rating->rating);
         }
         
-        return [
-            'count' => $count,
-            'average' => floatval(number_format($sum/$count, 1))
-        ];
+        return floatval(number_format($sum/$count, 1));
+    }
+    
+    public function save(array $options = [])
+    {
+        $saved = parent::save($options);
+        $this->recipe->rating = $this->average($this->recipe_id);
+        $this->recipe->save();
+        return $saved;
     }
 }

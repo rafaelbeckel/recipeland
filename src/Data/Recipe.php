@@ -16,8 +16,6 @@ class Recipe extends Model
     
     protected $hidden = ['published', 'deleted_at'];
     
-    protected $appends = ['rating'];
-    
     protected $casts = [
         'difficulty' => 'integer',
     ];
@@ -42,11 +40,6 @@ class Recipe extends Model
     public function ratings()
     {
         return $this->hasMany('Recipeland\Data\Rating');
-    }
-    
-    public function getRatingAttribute()
-    {
-        return Rating::average($this->id) ?: 'not rated yet';
     }
     
     public function attachIngredient($ingredient, string $quantity, string $unit)
