@@ -109,7 +109,8 @@ The server shall respond with:
 }
 ```
 
-Send this header to any protected route and you can use them. You MUST include the "Bearer" type before the token, and it MUST be in the `Authorization` header.
+Send this header to any protected route and you can use them.\
+You MUST include the "Bearer" type before the token, and it MUST be in the `Authorization` header.
 
 ### Creating and editing recipes:
 To create, replace (put) or update (patch) Recipes, send this raw JSON body to the appropriate endpoint:
