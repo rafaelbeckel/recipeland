@@ -73,8 +73,12 @@ abstract class AbstractController implements ControllerInterface, MiddlewareInte
         $this->response = $this->response->withBody($stream);
     }
 
-    public function setJsonResponse(array $json): void
+    public function setJsonResponse(array $json, string $message = null): void
     {
+        if ($message) {
+            $json['message'] = $message;
+        }
+
         $this->response = $this->response->withHeader(
                                                'Content-type',
                                                'application/json;charset=utf-8'
