@@ -1,112 +1,175 @@
-# HelloFresh Senior Backend Developer Test
+# RECIPELAND
 
-Hello and thanks for taking the time to try this out.
+Recipeland implements a REST API for managing Recipes. 
+It can list, create, read, update, delete, search and rate Recipes.
 
-The goal of this test is to assert (to some degree) your coding and architectural skills. You're given a simple problem so you can focus on showcasing development techniques. We encourage you to overengineer the solution a little to show off what you can do - assume you're building a production-ready application that other developers will need to work on and add to over time.
+It ships with the helper bash script `./recipe` for managing its deployment.
 
-You're **allowed and encouraged** to use third party libraries, as long as you put them together yourself **without relying on a framework or microframework** to do it for you. An effective developer knows what to build and what to reuse, but also how his/her tools work. Be prepared to answer some questions about those libraries, like why you chose them and what other alternatives you're familiar with.
+To run the application and expose it to port 80, just call `./recipe cook`.
+To see the full list of available commands, use `./recipe help`.
 
-As this is a code review process, please avoid adding generated code to the project. This makes our jobs as reviewers more difficult, as we can't review code you didn't write. This means avoiding libraries like _Propel ORM_, which generates thousands of lines of code in stub files.
 
-_Note: While we love open source here at HelloFresh, please do not create a public repo with your test in! This challenge is only shared with people interviewing, and for obvious reasons we'd like it to remain this way._
+## Project features 
+- The code has [100% test coverage](https://recipeland-rafaelbeckel.c9users.io/docs/test_coverage/index.html);
+- It ships with a simple to use, fun deploy script;
+- It generates whatever number of delicious random recipes;
+- It implements an internal DSL for input validation (we can build some complex rules with it);
+- List results are paginated and cached, with a DB fallback if cache layer fails;
+- It supports complex search queries like /recipes/search?prep_time={"gt":15,"lte":20};
+- Access management with a flexible ACL and smart JWT token issuance & validation;
+- PSR-1 & 2 coding style; PSR-3 logging; PSR-4 loading, PSR-7 messaging; PSR-11 container; PSR-15 Middlewares;
 
-## Prerequsites
 
-We use [Docker](https://www.docker.com/products/docker) to administer this test. This ensures that we get an identical result to you when we test your application out, and it also matches our internal development workflows. If you don't have it already, you'll need Docker installed on your machine. **The application MUST run in the Docker containers** - if it doesn't we cannot accept your submission. You **MAY** edit the containers or add additional ones if you like, but this **MUST** be clearly documented.
+## Endpoints
 
-We have provided some containers to help build your application in either PHP, Go or Python, with a variety of persistence layers available to use.
+#### public
+These endpoints are public and can be accessed by anyone:
 
-### Technology
+- `GET /recipes` 
+Will paginate and list all registered recipes. 
 
-- Valid PHP 7.1, Go 1.8, or Python 3.6 code
-- Persist data to either Postgres, Redis, or MongoDB (in the provided containers).
-    - Postgres connection details:
-        - host: `postgres`
-        - port: `5432`
-        - dbname: `hellofresh`
-        - username: `hellofresh`
-        - password: `hellofresh`
-    - Redis connection details:
-        - host: `redis`
-        - port: `6379`
-    - MongoDB connection details:
-        - host: `mongodb`
-        - port: `27017`
-- Use the provided `docker-compose.yml` file in the root of this repository. You are free to add more containers to this if you like.
+- `GET /recipes/{id}`
+Will read only the given recipe
 
-## Instructions
+- `GET /recipes/search?query='foo'` 
+Searches recipes by name, subtitle and description. It supports filtering by: author, rating, prep_time, total_time, vegetarian and difficulty. Example: `/recipes/search?vegetarian=1&total_time={"lt":30,"gte":25}&rating={"gt":4}`
 
-1. Clone this repository.
-- Create a new branch called `dev`.
-- Run `docker-compose up -d` to start the development environment.
-    - If you want to use Go, uncomment the Go container in the `docker-compose.yml` file. Add the commands you need in there to execute the application.
-    - If you want to use Python, uncomment the Python container in the `docker-compose.yml` file first. Add the commands you need in there to execute the application.
-- Visit `http://localhost` to see the contents of the web container and develop your application.
-- Create a pull request from your `dev` branch to the master branch. This PR should contain setup instructions for your application and a breakdown of the technologies & packages you chose to use, why you chose to use them, and the design decisions you made.
-- Reply to the thread you're having with our HR department telling them we can start reviewing your code.
+- `POST /auth/login`
+Provides a new JWT token for users who provide the correct username and password pair. See [Getting a token](#getting-a-token) session below for specific instructions.
 
-## Requirements
+#### not protected 
+The endpoint below can be accessed by any unprivileged user, but it requires a valid token for taking requests. See [User Authentication](#user-authentication) session below for specific instructions.
 
-We'd like you to build a simple Recipes API. The API **MUST** conform to REST practices and **MUST** provide the following functionality:
+- `POST /recipes/{id}/rating`
+Creates a new rating for the given recipe. A user can only rate each recipe once. Ratings cannot be edited. Authors cannot rate their own recipes. See [Rating recipes](#rating-recipes) session below for specific instructions. 
 
-- List, create, read, update, and delete Recipes
-- Search recipes
-- Rate recipes
+#### protected 
+These endpoints can only be accessed by users with specific read / write permissions.
 
-### Endpoints
+- `POST /recipes`
+Creates a new recipe. See [Creating and editing recipes](#creating-and-editing-recipes) session below for specific instructions. 
 
-Your application **MUST** conform to the following endpoint structure and return the HTTP status codes appropriate to each operation. Endpoints specified as protected below **SHOULD** require authentication to view. The method of authentication is up to you.
+- `PUT /recipes`
+Updates (replaces) an existing recipe by providing a full body. The provided document MUST contain all mandatory keys, and it will entirely replace the old recipe. All ingredients and steps relationships will be destroyed and replaced by the provided ones. See [Creating and editing recipes](#creating-and-editing-recipes) session below for specific instructions. 
 
-##### Recipes
+- `PATCH /recipes`
+Updates part of an existing recipe by providing a partial body. The provided document MUST contain at least one key, and it will replace only the selected keys in the old recipe. Existing ingredients and steps relationships will be kept. See [Creating and editing recipes](#creating-and-editing-recipes) session below for specific instructions. 
 
-| Name   | Method      | URL                    | Protected |
-| ---    | ---         | ---                    | ---       |
-| List   | `GET`       | `/recipes`             | ✘         |
-| Create | `POST`      | `/recipes`             | ✓         |
-| Get    | `GET`       | `/recipes/{id}`        | ✘         |
-| Update | `PUT/PATCH` | `/recipes/{id}`        | ✓         |
-| Delete | `DELETE`    | `/recipes/{id}`        | ✓         |
-| Rate   | `POST`      | `/recipes/{id}/rating` | ✘         |
+- `DELETE /recipes`
+Deletes the selected recipe. See [Deleting recipes](#deleting-recipes) session below for specific instructions. 
 
-An endpoint for recipe search functionality **MUST** also be implemented. The HTTP method and endpoint for this **MUST** be clearly documented.
+## User Authentication
+To access the protected routes, use one of these credentials:
 
-### Schema
+##### Homer Simpson
+![Homer](public/static/homer.jpg)
+- username: homer
+- password: Marge1234!
+**Role:** client
+- Can only rate recipes.
 
-- **Recipe**
-    - Unique ID
-    - Name
-    - Prep time
-    - Difficulty (1-3)
-    - Vegetarian (boolean)
+##### Luigi Risotto
+![Luigi](public/static/luigi.jpg)
+- username: luigi
+- password: Pasta1234!
+**Role:** chef
+- Can create recipes
+- Can edit his own recipes
+- Can delete his own recipes
 
-Additionally, recipes can be rated many times from 1-5 and a rating is never overwritten.
+##### Montgomery Burns
+![Burns](public/static/burns.jpg)
+- username: burns
+- password: Money1234!
+**Role:** restaurant owner
+- Can create recipes
+- Can edit all recipes
+- Can delete all recipes
 
-If you need a more visual idea of how the data should be represented, [take a look at one of our recipe cards](https://ddw4dkk7s1lkt.cloudfront.net/card/hdp-chicken-with-farro-75b306ff.pdf?t=20160927003916).
 
-## Evaluation criteria
+### Getting a token:
+Do a POST request to `/auth/login` with a raw JSON body of:
+```json
+{
+    "username": "foo",
+    "password": "bar"
+}
+```
 
-These are some aspects we pay particular attention to:
+The server shall respond with:
+###### Header:
+**Authorization: Bearer your.token.here** (valid for 30 minutes)
+###### Body:
+```json
+{
+    "status":"Authorized"
+}
+```
 
-- You **MUST** use packages, but you **MUST NOT** use a web-app framework or microframework.
-- Your application **MUST** run within the containers. Please provide short setup instructions.
-- The API **MUST** return valid JSON and **MUST** follow the endpoints set out above.
-- You **MUST** write testable code and demonstrate unit testing it (for clarity,  PHPUnit is not considered a framework as per the first point above. We encourage you to use PHPUnit or any other kind of **testing** framework).
-- You **SHOULD** pay attention to best security practices.
-- You **SHOULD** follow SOLID principles where appropriate.
-- You do **NOT** have to build a UI for this API.
+Send this header to any protected route and you can use them. You MUST include the "Bearer" type before the token, and it MUST be in the `Authorization` header.
 
-The following earn you bonus points:
+### Creating and editing recipes:
+To create, replace (put) or update (patch) Recipes, send this raw JSON body to the appropriate endpoint:
+```json
+    {
+        "recipe" : {
+            "name" : "My Most delicious Recipe!",
+            "subtitle" : "My subtitle",
+            "description" : "My description",
+            "prep_time" : 10,
+            "total_time" : 20,
+            "vegetarian" : 1,
+            "difficulty" : 3,
+            "picture" : "https://example.com/picture.jpg",
+            "ingredients" : [
+                {
+                    "slug" : "my_ingredient",
+                    "quantity" : "12",
+                    "unit" : "mg",
+                    "name" : "My Ingredient",
+                    "picture" : "https://example.com/picture.jpg",
+                    "allergens" : "milk"
+                },
+                {
+                    "slug" : "my_second_ingredient",
+                    "quantity" : "10",
+                    "unit" : "ml",
+                    "name" : "My Second Ingredient",
+                    "picture" : "https://example.com/picture.jpg",
+                }
+            ],
+            "steps" : [
+                {
+                    "description" : "Put ingredient somewhere",
+                    "picture" : "https://example.com/picture.jpg"
+                },
+                {
+                    "description" : "Eat Ingredient",
+                    "picture" : "https://example.com/picture.jpg"
+                }
+            ]
+        }
+    }
+```
 
-- Your answers during code review
-- An informative, detailed description in the PR
-- Setup with a one liner or a script
-- Content negotiation
-- Pagination
-- Using any kind of Database Access Abstraction
-- Other types of testing - e.g. integration tests
-- Following the industry standard style guide for the language you choose to use - `PSR-2`, `gofmt`, etc.
-- A git history (even if brief) with clear, concise commit messages.
+For creating and replacing (put) you MUST provide all the keys above. For updating (patch), you can choose some keys to be updated, but you MUST include at least one of them.
 
----
+When creating a recipe, if an ingredient's `slug` or a step's `description` exists, the provided body will be ignored (the program will use the existing record in the database). When updating or patching, existing body keys will be replaced by the provided ones.
 
-Good luck!
+###### Input validation:
+All keys are validated before insertion in the database. So, if you provide the incorrect type for some key, the server will respond with a 401 Unauthorized header with the validation message in the body. 
+
+Notice that it will always respond 401 for incorrect input, even with valid tokens, because input validation occurs before user authentication (checking for token presence in the headers is part of the validation itself), so the server does not know yet who is making the request.
+
+### Rating recipes:
+To create a rating for a given recipe, sinply provide a `rating` key in the body:
+```json
+{
+    "rating" : 4
+}
+```
+
+The rating MUST be an integer from 1 to 5. A user can only rate each recipe once. Ratings cannot be edited. Authors cannot rate their own recipes.
+
+### Deleting recipes:
+You don't need to provide a body to delete recipes. Users can only delete their own recipes, unless they have `delete_all_recipes` permission.

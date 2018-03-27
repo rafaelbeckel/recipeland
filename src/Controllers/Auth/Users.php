@@ -15,11 +15,11 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class Users extends Controller
 {
     /**
-     * @description
-     * Authenticate a user
-     *
-     * @params ServerRequestInterface
-     **/
+     * Provides a new JWT token for an authenticated user
+     * 
+     * @param  LoginRequest
+     * @return void
+     */
     public function login(LoginRequest $request)
     {
         $username = $request->getParam('username');

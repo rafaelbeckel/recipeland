@@ -4,6 +4,16 @@ declare(strict_types=1);
 
 namespace Recipeland;
 
+/**
+ * Defines all the routes in our Application.
+ *
+ * This class will be injected in the Router
+ * to map URL endpoints to Controller classes.
+ *
+ * By default, the root controller namespace
+ * is \Recipeland\Controllers, so our routes
+ * do not need to declare the full namespace.
+ */
 class Routes
 {
     protected $routes = [];
@@ -23,12 +33,12 @@ class Routes
         $this->add( 'POST',   '/recipes/{id}/rating', 'Recipes.rate'         );
     }
     
-    public function add($method, $path, $destination)
+    public function add(string $method, string $path, string $destination): void
     {
         $this->routes[] = [$method, $path, $destination];
     }
     
-    public function get()
+    public function get(): array
     {
         return $this->routes;
     }

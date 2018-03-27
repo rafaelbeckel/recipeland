@@ -17,7 +17,7 @@ class RateRecipeRequest extends SpecializedRequest
         $this->addRule('attributes:item(db):is_instance_of('.DB::class.')');
         $this->addRule('attributes:item(jwt):is_instance_of('.Token::class.')');
         
-        $this->addRule('body:item(rating):is_numeric');
+        $this->addRule('body:item(rating):is_type(integer)');
         $this->addRule('body:item(rating):is_between(1,5)');
     }
 }
