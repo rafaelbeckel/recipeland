@@ -49,14 +49,15 @@ class Request extends ServerRequest implements RequestInterface
     
     protected function populateData(ServerRequestInterface $request): void
     {
+        // The order here defines validation priority
+        $this->data['version'] = $request->getProtocolVersion();
+        $this->data['headers'] = $request->getHeaders();
+        $this->data['method'] = $request->getMethod();
         $this->data['uri'] = $request->getUri();
+        $this->data['query'] = $request->getQueryParams();
+        $this->data['cookies'] = $request->getCookieParams();
         $this->data['body'] = json_decode((string) $request->getBody(), true);
         $this->data['files'] = $request->getUploadedFiles();
-        $this->data['query'] = $request->getQueryParams();
-        $this->data['method'] = $request->getMethod();
-        $this->data['headers'] = $request->getHeaders();
-        $this->data['cookies'] = $request->getCookieParams();
-        $this->data['version'] = $request->getProtocolVersion();
         $this->data['attributes'] = $request->getAttributes();
     }
 }
