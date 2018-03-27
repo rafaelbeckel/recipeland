@@ -26,22 +26,31 @@ class RulesTest extends TestSuite
     {
         echo 'Rule: compare';
 
-        $equals = new Compare(['key1'=>'1', 'key2'=>2]);
+        $compare = new Compare(['key1'=>'1', 'key2'=>2]);
 
-        $this->assertTrue($equals->apply('key1', '<', 'key2'));
-        $this->assertFalse($equals->apply('key1', '>', 'key2'));
-        $this->assertTrue($equals->apply('key1', '<=', 'key2'));
-        $this->assertFalse($equals->apply('key1', '>=', 'key2'));
-        $this->assertFalse($equals->apply('key1', '==', 'key2'));
-        $this->assertTrue($equals->apply('key1', '!=', 'key2'));
-        $this->assertTrue($equals->apply('key1', '!==', 'key2'));
-        $this->assertFalse($equals->apply('key1', '===', 'key2'));
+        $this->assertTrue($compare->apply('key1', '<', 'key2'));
+        $this->assertFalse($compare->apply('key1', '>', 'key2'));
+        $this->assertTrue($compare->apply('key1', '<=', 'key2'));
+        $this->assertFalse($compare->apply('key1', '>=', 'key2'));
+        $this->assertFalse($compare->apply('key1', '==', 'key2'));
+        $this->assertTrue($compare->apply('key1', '!=', 'key2'));
+        $this->assertTrue($compare->apply('key1', '!==', 'key2'));
+        $this->assertFalse($compare->apply('key1', '===', 'key2'));
         
         $this->expectException(BadMethodCallException::class);
-        $equals->apply('key1', '==');
+        $compare->apply('key1', '==');
         
-        $invalid = new Compare(['key1'=>'foo', 'key2'=>'foo']);
-        $this->assertFalse($equals->apply('key1', '==', 'key2'));
+        $invalid = new Compare('not_array');
+        $what = $invalid->apply('key1', '==', 'key2');
+        $this->assertFalse($what);
+    }
+    
+    public function test_rule_invalid_compare()
+    {
+        echo 'Rule: invalid compare';
+        
+        $invalid = new Compare('not_array');
+        $this->assertFalse($invalid->apply('key1', '==', 'key2'));
     }
     
     public function test_rule_equals()

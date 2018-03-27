@@ -104,7 +104,6 @@ class ApiTest extends TestSuite
         echo 'API test: POST /login with wrong password - returns 401';
         
         $response = $this->login('luigi', 'Wrong-Password-123');
-        $this->assertEquals('{"error":"Unauthorized"}', (string) $response->getBody());
         $this->assertHeaders($response, 401);
     }
 
@@ -116,7 +115,7 @@ class ApiTest extends TestSuite
             'authorization' => [$this->get_valid_token()],
         ];
         
-        sleep(2);
+        sleep(2); // Wait for token validity
         
         $response = $this->request('POST', '/recipes', $this->newRecipe, $header);
         $this->assertHeaders($response);
@@ -127,7 +126,6 @@ class ApiTest extends TestSuite
         // Adapt values for deep comparison
         $input['recipe']['created_by'] = 2;
         $input['recipe']['vegetarian'] = true;
-        $input['recipe']['rating'] = 'not rated yet';
         foreach ($recipe['ingredients'] as $key => $value) {
             $recipe['ingredients'][$key]['quantity'] = $value['details']['quantity'];
             $recipe['ingredients'][$key]['unit'] = $value['details']['unit'];
@@ -141,6 +139,18 @@ class ApiTest extends TestSuite
         $this->assertEquals($input['recipe'], $recipe);
     }
     
+    public function test_create_recipe_with_bad_header()
+    {
+        echo 'API test: POST /recipes with malformed header - returns 400';
+        
+        $header = [
+            'authorization' => 'Thief abc'
+        ];
+        
+        $response = $this->request('POST', '/recipes', $this->newRecipe, $header);
+        $this->assertHeaders($response, 400);
+    }
+    
     public function test_create_recipe_with_bad_token()
     {
         echo 'API test: POST /recipes with invalid token - returns 400';
@@ -150,8 +160,22 @@ class ApiTest extends TestSuite
         ];
         
         $response = $this->request('POST', '/recipes', $this->newRecipe, $header);
-        $this->assertArraySubset(['error' => 'Bad Request'], json_decode((string) $response->getBody(), true));
         $this->assertHeaders($response, 400);
+    }
+    
+    public function test_create_recipe_with_invalid_token_signature()
+    {
+        echo 'API test: POST /recipes with invalid token signature - returns 401';
+        
+        $token_parts = explode('.', $this->get_valid_token());
+        $token = $token_parts[0].'.'.$token_parts[1].'.Invalid_Signature';
+        
+        $header = [
+            'authorization' => [$token],
+        ];
+        
+        $response = $this->request('POST', '/recipes', $this->newRecipe, $header);
+        $this->assertHeaders($response, 401);
     }
     
     public function test_create_recipe_with_invalid_claims()
@@ -165,8 +189,6 @@ class ApiTest extends TestSuite
         // Do not wait - get invalid claim
         
         $response = $this->request('POST', '/recipes', $this->newRecipe, $header);
-        
-        $this->assertArraySubset(['error' => 'Unauthorized'], json_decode((string) $response->getBody(), true));
         $this->assertHeaders($response, 401);
     }
     
@@ -186,9 +208,21 @@ class ApiTest extends TestSuite
         $user->save();
         
         $response = $this->request('POST', '/recipes', $this->newRecipe, $header);
-        
-        $this->assertArraySubset(['error' => 'Unauthorized'], json_decode((string) $response->getBody(), true));
         $this->assertHeaders($response, 401);
+    }
+    
+    public function test_create_recipe_with_unprivileged_user()
+    {
+        echo 'API test: POST /recipes with unprivileged user - returns 403';
+        
+        $header = [
+            'authorization' => [$this->get_valid_token('homer','Marge1234!')],
+        ];
+        
+        sleep(2);
+        
+        $response = $this->request('POST', '/recipes', $this->newRecipe, $header);
+        $this->assertHeaders($response, 403);
     }
 
     public function test_get_recipe_1()
@@ -201,14 +235,13 @@ class ApiTest extends TestSuite
         $this->assertHeaders($response);
     }
     
-    public function test_get_recipe_2()
+    public function test_get_inexistent_recipe()
     {
-        echo 'API test: GET /recipes/2 and get the given recipe';
+        echo 'API test: GET /recipes/inexistent - returns 404';
 
-        $response = $this->request('GET', '/recipes/2');
+        $response = $this->request('GET', '/recipes/99');
         $responseArray = $this->jsonToArray($response);
-        $this->assertEquals($this->expected['data'][1], $responseArray);
-        $this->assertHeaders($response);
+        $this->assertHeaders($response, 404);
     }
     
     public function test_edit_recipe()
@@ -231,7 +264,6 @@ class ApiTest extends TestSuite
         // Adapt values for deep comparison
         $input['recipe']['created_by'] = 2;
         $input['recipe']['vegetarian'] = true;
-        $input['recipe']['rating'] = 'not rated yet';
         foreach ($recipe['ingredients'] as $key => $value) {
             $recipe['ingredients'][$key]['quantity'] = $value['details']['quantity'];
             $recipe['ingredients'][$key]['unit'] = $value['details']['unit'];
@@ -243,6 +275,20 @@ class ApiTest extends TestSuite
         $this->recursive_unset($recipe, 'deleted_at');
         
         $this->assertEquals($input['recipe'], $recipe);
+    }
+    
+    public function test_edit_inexistent_recipe()
+    {
+        echo 'API test: PUT /recipes/inexistent - returns 404';
+        
+        $header = [
+            'authorization' => [$this->get_valid_token()],
+        ];
+        
+        sleep(2);
+        
+        $response = $this->request('PUT', '/recipes/99', $this->newRecipe, $header);
+        $this->assertHeaders($response, 404);
     }
     
     public function test_edit_not_my_recipe()
@@ -320,6 +366,20 @@ class ApiTest extends TestSuite
         $this->assertEquals('Test Recipe Fooo', $recipe->name);
     }
     
+    public function test_delete_inexistent_recipe()
+    {
+        echo 'API test: DELETE /recipes/inexistent - returns 404';
+        
+        $header = [
+            'authorization' => [$this->get_valid_token()],
+        ];
+        
+        sleep(2);
+        
+        $response = $this->request('DELETE', '/recipes/99', '', $header);
+        $this->assertHeaders($response, 404);
+    }
+    
     public function test_delete_not_my_recipe()
     {
         echo 'API test: DELETE /recipes/{id} not owned by user - returns 403';
@@ -379,6 +439,24 @@ class ApiTest extends TestSuite
         $this->assertHeaders($response, 403);
     }
     
+    public function test_create_rating_inexistent_recipe()
+    {
+        echo 'API test: POST /recipes/inexistent/rating - returns 404';
+
+        $header = [
+            'authorization' => [$this->get_valid_token()],
+        ];
+        
+        $rating = [
+            'rating' => 5
+        ];
+        
+        sleep(2);
+        
+        $response = $this->request('POST', '/recipes/99/rating', json_encode($rating), $header);
+        $this->assertHeaders($response, 404);
+    }
+    
     public function test_search()
     {
         echo 'API test: GET /recipes/search?query=... search by keyword';
@@ -405,7 +483,7 @@ class ApiTest extends TestSuite
     {
         echo 'API test: GET /recipes/search?difficulty={n}&?vegetarian={n} filter properties';
         
-        $response = $this->request('GET', '/recipes/search?difficulty=1&?vegetarian=1');
+        $response = $this->request('GET', '/recipes/search?difficulty=1&vegetarian=1');
         $responseArray = $this->jsonToArray($response);
         
         $this->assertCount(2, $responseArray['data']);
@@ -414,9 +492,24 @@ class ApiTest extends TestSuite
     
     public function test_search_by_prep_time_and_total_time()
     {
-        echo 'API test: GET /recipes/search?prep_time={n}&?total_time={n} search by time';
+        echo 'API test: GET /recipes/search?prep_time={n}&?total_time={n} search by cooking time';
         
         $response = $this->request('GET', '/recipes/search?prep_time=10&total_time=20');
+        $responseArray = $this->jsonToArray($response);
+        
+        $this->assertCount(1, $responseArray['data']);
+        $this->assertHeaders($response);
+    }
+    
+    public function test_search_by_rating()
+    {
+        echo 'API test: GET /recipes/search?rating={n} search by rating';
+        
+        $recipe = Recipe::find(1);
+        $recipe->rating = 5.0;
+        $recipe->save();
+        
+        $response = $this->request('GET', '/recipes/search?rating=5');
         $responseArray = $this->jsonToArray($response);
         
         $this->assertCount(1, $responseArray['data']);
@@ -451,7 +544,6 @@ class ApiTest extends TestSuite
 
         $response = $this->request('GET', '/recipes/non/existent/route');
         $responseArray = $this->jsonToArray($response);
-        $this->assertEquals(['error' => 'Not Found'], $responseArray);
         $this->assertHeaders($response, 404);
     }
 
@@ -461,7 +553,6 @@ class ApiTest extends TestSuite
 
         $response = $this->request('DELETE', '/recipes/1/rating');
         $responseArray = $this->jsonToArray($response);
-        $this->assertEquals(['error' => 'Method Not Allowed'], $responseArray);
         $this->assertHeaders($response, 405);
     }
     

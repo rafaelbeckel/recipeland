@@ -41,21 +41,31 @@ class Compare extends AbstractRule
         
         switch ($operator) {
             case '>':
-                return floatval($value1) > floatval($value2);
+                $condition = floatval($value1) > floatval($value2);
+                break;
             case '<':
-                return floatval($value1) < floatval($value2);
+                $condition = floatval($value1) < floatval($value2);
+                break;
             case '>=':
-                return floatval($value1) >= floatval($value2);
+                $condition = floatval($value1) >= floatval($value2);
+                break;
             case '<=':
-                return floatval($value1) <= floatval($value2);
+                $condition = floatval($value1) <= floatval($value2);
+                break;
             case '==':
-                return floatval($value1) == floatval($value2);
+                $condition = floatval($value1) == floatval($value2);
+                break;
             case '===':
-                return floatval($value1) === floatval($value2);
+                $condition = floatval($value1) === floatval($value2);
+                break;
             case '!=':
-                return floatval($value1) != floatval($value2);
+                $condition = floatval($value1) != floatval($value2);
+                break;
             case '!==':
-                return floatval($value1) !== floatval($value2);
+                $condition = floatval($value1) !== floatval($value2);
+                break;
         }
+        
+        return $condition;
     }
 }

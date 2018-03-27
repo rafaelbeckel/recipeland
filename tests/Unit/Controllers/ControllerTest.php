@@ -8,12 +8,14 @@ use Recipeland\Controllers\AbstractController as Controller;
 use Recipeland\Interfaces\RequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 use Recipeland\Controllers\ControllerFactory;
+use Tests\Unit\Http\Request\BadlyDefined;
 use Psr\Log\LoggerInterface as Logger;
 use Tests\Unit\Http\Request\IWantThis;
 use DI\FactoryInterface as Container;
 use Recipeland\Controllers\Errors;
 use GuzzleHttp\Psr7\ServerRequest;
 use Recipeland\Helpers\Factory;
+use InvalidArgumentException;
 use BadMethodCallException;
 use ReflectionException;
 use RuntimeException;
@@ -64,6 +66,11 @@ class ControllerTest extends TestSuite
             public function specialized_request(IWantThis $request, $phpunit)
             {
                 $this->setJsonResponse([$request->getParam('foo') => 'baz']);
+            }
+            
+            public function badly_defined_request(BadlyDefined $request, $phpunit)
+            {
+                // Will not be called
             }
             
             public function badly_defined_action(string $request)
@@ -174,6 +181,19 @@ class ControllerTest extends TestSuite
         $response = $controller->process($request, $this->handler);
         
         $this->assertEquals(404, $response->getStatusCode());
+    }
+    
+    public function test_badly_defined_request_rules()
+    {
+        echo 'Controller - test badly defined request rules';
+        
+        $logger = $this->createMock(Logger::class);
+        
+        $this->expectException(InvalidArgumentException::class);
+        
+        $request = new ServerRequest('POST', '/foo', [], json_encode(['foo'=>'bar']));
+        $controller = $this->buildController('badly_defined_request', [$this], $logger);
+        $controller->process($request, $this->handler);
     }
     
     public function test_failing_upgrade_request()

@@ -19,20 +19,12 @@
     array (
       0 => 
       array (
-        'regex' => '~^(?|/recipes/([^/]+)|/recipes/([^/]+)/rating())$~',
+        'regex' => '~^(?|/recipes/([^/]+))$~',
         'routeMap' => 
         array (
           2 => 
           array (
             0 => 'Recipes.read',
-            1 => 
-            array (
-              'id' => 'id',
-            ),
-          ),
-          3 => 
-          array (
-            0 => 'Recipes.getRate',
             1 => 
             array (
               'id' => 'id',

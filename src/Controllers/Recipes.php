@@ -31,22 +31,27 @@ class Recipes extends Controller
     const PAGE_NAME = 'page';
 
     /**
-     * @description
-     * Lists the recipes
+     * Lists all recipes in JSON format
+     * 
+     * The recipes are always paginated.
+     * This method accepts the page number 
+     * as an input via URL query parameters.
      *
      * @params ServerRequestInterface
      **/
     public function list(Request $request)
     {
-        $recipes = $this->getRecipeFromCacheOrDB($request);
+        $recipes = $this->getRecipesFromCacheOrDB($request);
         $this->setJsonResponse($recipes->toArray());
     }
 
     /**
-     * @description
-     * Lists the recipes
+     * Creates a new recipe.
+     * 
+     * This is a protected method that accepts
+     * only pre-validated signed Requests.
      *
-     * @params ServerRequestInterface
+     * @params CreateRecipeRequest
      **/
     public function create(CreateRecipeRequest $request)
     {
@@ -63,21 +68,26 @@ class Recipes extends Controller
         $recipe = $this->createNewRecipe($db, $data, $user_id);
         
         if (empty($recipe)) {
+            // @codeCoverageIgnoreStart
             return $this->error(
                 'internal_server_error',
                 'Insert a new Recipe: DB Transaction failed.'
             );
+            // @codeCoverageIgnoreEnd
         }
         
         $this->setJsonResponse($recipe->toArray());
     }
 
     /**
-     * @description
-     * Lists the recipes
+     * Read a given recipe by id
+     * 
+     * This method shows a recipe from a given id.
+     * It should receive only the recipe id 
+     * as a parameter directly via URL.
      *
      * @params ServerRequestInterface
-     * @params integer $id
+     * @params integer|string $id
      **/
     public function read(Request $request, $id)
     {
@@ -91,10 +101,15 @@ class Recipes extends Controller
     }
 
     /**
-     * @description
-     * Lists the recipes
+     * Replaces a selected recipe by a new provided one.
+     * 
+     * This is a protected method that accepts
+     * only pre-validated signed Requests.
+     * 
+     * It should receive all fields in 
+     * one call via a PUT request.
      *
-     * @params ServerRequestInterface
+     * @params UpdateRecipeRequest
      * @params integer $id
      **/
     public function update(UpdateRecipeRequest $request, $id)
@@ -103,10 +118,15 @@ class Recipes extends Controller
     }
 
     /**
-     * @description
-     * Lists the recipes
-     *
-     * @params ServerRequestInterface
+     * Updates some fields in the selected recipe.
+     * 
+     * This is a protected method that accepts
+     * only pre-validated signed Requests.
+     * 
+     * It should receive a list of fields 
+     * to be updated via a PATCH request.
+     * 
+     * @params UpdateRecipeFieldsRequest
      * @params integer $id
      **/
     public function updateFields(UpdateRecipeFieldsRequest $request, $id)
@@ -115,10 +135,15 @@ class Recipes extends Controller
     }
 
     /**
-     * @description
-     * Lists the recipes
+     * Deletes the selected Recipe.
+     * 
+     * This is a protected method that accepts
+     * only pre-validated signed Requests.
+     * 
+     * It should receive only the recipe id 
+     * as a parameter directly via URL.
      *
-     * @params ServerRequestInterface
+     * @params DeleteRecipeRequest
      * @params integer $id
      **/
     public function delete(DeleteRecipeRequest $request, $id)
@@ -141,10 +166,12 @@ class Recipes extends Controller
     }
 
     /**
-     * @description
-     * Lists the recipes
+     * Creates a rating for a given recipe.
      *
-     * @params ServerRequestInterface
+     * This is a protected method that accepts
+     * only pre-validated signed Requests.
+     * 
+     * @params RateRecipeRequest
      * @params integer $id
      **/
     public function rate(RateRecipeRequest $request, $id)
@@ -178,55 +205,32 @@ class Recipes extends Controller
         ]);
     }
     
-    
     /**
-     * @description
-     * Lists the recipes
-     *
-     * @params ServerRequestInterface
-     * @params integer $id
-     **/
-    public function getRate(Request $request, $id)
-    {
-        $recipe = Recipe::find($id);
-        if (!$recipe) {
-            return $this->error('not_found', "Recipe ".$id." does not exist.");
-        }
-        
-        $rating = Rating::average($id);
-        if (!$rating) {
-            return $this->error('not_found', "Recipe ".$id." was not rated yet.");
-        }
-        
-        $this->setJsonResponse([
-            'recipe' => [
-                'id' => $recipe->id,
-                'name' => $recipe->name,
-                'author' => $recipe->author->name,
-                'ratings_count' => $rating['count'],
-                'average_rating' => $rating['average'],
-            ]
-        ]);
-    }
-    
-    /**
-     * @description
-     * Searches the recipes
-     *
-     * @params ServerRequestInterface
-     * @params integer $id
+     * Searches the recipes database
+     * 
+     * It can filter the recipes by:
+     * - Query string (searches name, subtitle AND description)
+     * - Author
+     * - Rating
+     * - Preparation time
+     * - Total time
+     * - Vegetarian flag
+     * - Difficulty
      **/
     public function search(SearchRecipeRequest $request)
     {
         $page = $request->getQueryParam('page', 1);
         $input = $request->getQueryParam('query', null);
         $author = $request->getQueryParam('author', null);
+        $rating = $request->getQueryParam('rating', null);
         $prep_time = $request->getQueryParam('prep_time', null);
         $total_time = $request->getQueryParam('total_time', null);
         $vegetarian = $request->getQueryParam('vegetarian', null);
         $difficulty = $request->getQueryParam('difficulty', null);
         
-        $users = User::where('name', 'ilike', '%'.$author.'%')->pluck('id')->toArray();
+        $users = $author ? User::where('name', 'ilike', '%'.$author.'%')
+                               ->pluck('id')
+                               ->toArray() : null;
         
         $results = Recipe::with('ingredients', 'steps', 'author')
             ->where(function ($q) use ($input) {
@@ -239,6 +243,9 @@ class Recipes extends Controller
             })
             ->when(!is_null($vegetarian), function ($q) use ($vegetarian) {
                 return $q->where('vegetarian', $vegetarian);
+            })
+            ->when(!is_null($rating), function ($q) use ($rating) {
+                return $this->addFilters('rating', $rating, $q);
             })
             ->when(!is_null($difficulty), function ($q) use ($difficulty) {
                 return $this->addFilters('difficulty', $difficulty, $q);
@@ -259,9 +266,8 @@ class Recipes extends Controller
         $this->setJsonResponse($results->toArray());
     }
     
-    
     /**
-     * A helper method to check token's permission
+     * A helper method to check token's permission for editing and deleting
      **/
     private function can(Request $request, string $action, Recipe $recipe): bool
     {
@@ -275,7 +281,12 @@ class Recipes extends Controller
         return $proceed;
     }
     
-    private function getRecipeFromCacheOrDB(Request $request)
+    /**
+     * Gets the recipe collection from cache or DB
+     * 
+     * @param ServerRequestInterface $request
+     **/
+    private function getRecipesFromCacheOrDB(Request $request)
     {
         $force = $request->getQueryParam('force', false);
         $page = $request->getQueryParam('page', 1);
@@ -287,7 +298,9 @@ class Recipes extends Controller
                              return $this->getRecipesFromPage($page);
                          });
         } else {
+            // @codeCoverageIgnoreStart
             return $this->getRecipesFromPage($page);
+            // @codeCoverageIgnoreEnd
         }
     }
     
@@ -318,10 +331,12 @@ class Recipes extends Controller
         $this->updateRecipe($db, $recipe, $data, $options);
         
         if ($recipe->updated_at == $last_update) {
+            // @codeCoverageIgnoreStart
             return $this->error(
                 'internal_server_error',
                 'Update Recipe: DB Transaction failed.'
             );
+            // @codeCoverageIgnoreEnd
         }
 
         $this->setJsonResponse($recipe->toArray());

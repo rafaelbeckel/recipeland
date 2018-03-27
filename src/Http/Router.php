@@ -107,11 +107,13 @@ class Router implements RouterInterface
                 $method,
                 $arguments
             );
+        // @codeCoverageIgnoreStart
         } catch (Exception $e) {
             if ($className == 'Errors') {
                 throw new RuntimeException(self::ERROR_CONTROLLER_NOT_FOUND);
             }
             $this->setController('Errors.not_found');
         }
+        // @codeCoverageIgnoreEnd
     }
 }

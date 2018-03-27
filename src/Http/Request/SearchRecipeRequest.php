@@ -21,11 +21,17 @@ class SearchRecipeRequest extends SpecializedRequest
         $this->addRule('?query:item(vegetarian):is_numeric');
         $this->addRule('?query:item(vegetarian):is_between(0,1)');
         
-        $this->addRule('?query:item(difficulty):not_empty');
-        $this->addRule('?query:item(difficulty):item(gt):is_between(0,2)');
+        $this->addRule('?query:item(difficulty):not_empty'); //int max 3
+        $this->addRule('?query:item(difficulty):item(gt):is_between(0,3)');
         $this->addRule('?query:item(difficulty):item(lt):is_between(2,3)');
         $this->addRule('?query:item(difficulty):item(gte):is_between(0,3)');
         $this->addRule('?query:item(difficulty):item(lte):is_between(1,3)');
+        
+        $this->addRule('?query:item(rating):not_empty'); //float max 5
+        $this->addRule('?query:item(rating):item(gt):is_between(1,5)');
+        $this->addRule('?query:item(rating):item(lt):is_between(1,5)');
+        $this->addRule('?query:item(rating):item(gte):is_between(1,5)');
+        $this->addRule('?query:item(rating):item(lte):is_between(1,5)');
         
         $this->addRule('?query:item(prep_time):not_empty');
         $this->addRule('?query:item(prep_time):item(gt):is_numeric');

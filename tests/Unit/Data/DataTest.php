@@ -13,6 +13,9 @@ use Recipeland\Data\User;
 use Tests\Api\SeedsData;
 use Tests\TestSuite;
 
+/**
+ * @group slow
+ */
 class DataTest extends TestSuite
 {
     use SeedsData;
@@ -56,10 +59,7 @@ class DataTest extends TestSuite
         $this->assertEquals($rating->rating, $user->ratings()->first()->rating);
         $this->assertEquals($rating->author->id, $user->id);
         $this->assertEquals($rating->recipe->id, $recipe->id);
-        $this->assertEquals($rating::average(1), [
-            'count' => 1,
-            'average' => 5
-        ]);
+        $this->assertEquals($rating::average(1), 5);
         
         $this->assertEquals($recipe->author->id, 2);
         
@@ -68,13 +68,10 @@ class DataTest extends TestSuite
             'recipe_id' => 1,
             'rating' => 5.0
         ], $recipe->ratings->toArray()[0]);
-        $this->assertEquals($recipe->rating, [
-            'count' => 1,
-            'average' => 5
-        ]);
+        $this->assertEquals(5, $recipe->fresh()->rating);
         
         $step = Step::find(1);
-        $attached = $step->recipes()->first();
+        $attached = $step->recipes()->find(1);
         $this->assertEquals($recipe->id, $attached->id);
         
         $user->createPassword('foo');

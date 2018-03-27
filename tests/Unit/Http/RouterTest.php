@@ -8,8 +8,11 @@ use GuzzleHttp\Psr7\ServerRequest as Request;
 use Recipeland\Interfaces\ValidatorInterface;
 use Recipeland\Interfaces\FactoryInterface;
 use Psr\Http\Server\MiddlewareInterface;
+use InvalidArgumentException;
 use Recipeland\Http\Router;
+use RuntimeException;
 use Tests\TestSuite;
+use Exception;
 
 class RouterTest extends TestSuite
 {
@@ -36,7 +39,6 @@ class RouterTest extends TestSuite
         $request = new Request('GET', '/foo');
         $router = new Router([['GET', '/foo', 'Bar.baz']], $factory, $this->v);
 
-        // Let's call our router
         $controller = $router->getControllerFor($request);
 
         $this->assertInstanceOf(ControllerInterface::class, $controller);
@@ -57,7 +59,6 @@ class RouterTest extends TestSuite
         $request = new Request('GET', '/foo/1234/make/Coffee');
         $router = new Router([['GET', '/foo/{id}/make/{name}', 'Bar.baz']], $factory, $this->v);
 
-        // Let's call our router
         $router->getControllerFor($request);
     }
 
@@ -164,7 +165,6 @@ class RouterTest extends TestSuite
         $request = new Request('GET', '/foooooooo');
         $router = new Router([['GET', '/foo', 'Bar.baz']], $factory, $this->v);
 
-        // Let's call our router
         $router->getControllerFor($request);
     }
 
@@ -182,7 +182,6 @@ class RouterTest extends TestSuite
         $request = new Request('GET', '/fo');
         $router = new Router([['GET', '/foo', 'Bar.baz']], $factory, $this->v);
 
-        // Let's call our router
         $router->getControllerFor($request);
     }
 
@@ -200,7 +199,22 @@ class RouterTest extends TestSuite
         $request = new Request('POST', '/foo');
         $router = new Router([['GET',  '/foo', 'Bar.baz']], $factory, $this->v);
 
-        // Let's call our router
+        $router->getControllerFor($request);
+    }
+    
+    public function test_Router_calls_invalid_route()
+    {
+        echo 'Router: throws exception if route is invalid';
+
+        $factory = $this->createMock(FactoryInterface::class);
+        $validator = $this->createMock(ValidatorInterface::class);
+        $validator->method('validate')->willReturn(false);
+        
+        $this->expectException(InvalidArgumentException::class);
+        
+        $request = new Request('POST', '/foo');
+        $router = new Router([['GET',  '/foo', 'Bar.baz']], $factory, $validator);
+        
         $router->getControllerFor($request);
     }
     

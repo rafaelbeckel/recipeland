@@ -32,19 +32,23 @@ class GetDataSources implements MiddlewareInterface
         try {
             $this->cache->getStore()->getRedis()->ping();
             $request = $request->withAttribute('cache', $this->cache);
+        // @codeCoverageIgnoreStart
         } catch (\Predis\Connection\ConnectionException $e) {
             // Component unavailable, but App still works. Move on...
             $this->logger->critical($e->getMessage(), $e->getTrace());
         }
+        // @codeCoverageIgnoreEnd
 
         try {
             $this->db->getConnection()->getPdo();
             $request = $request->withAttribute('db', $this->db->getConnection());
+        // @codeCoverageIgnoreStart
         } catch (\PDOException $e) {
             $this->logger->alert($e->getMessage(), $e->getTrace());
 
             return $this->errorResponse('service_unavailable', $request, $next);
         }
+        // @codeCoverageIgnoreEnd
 
         return $next->handle($request);
     }

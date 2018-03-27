@@ -54,21 +54,14 @@ trait ParsesValidationDSL
     
     private function parseRule(string $rule): array
     {
-        if ($this->base_rule) {
-            $this->optional = $this->isOptional($this->base_rule);
-        } else {
-            $this->optional = $this->isOptional($rule);
-        }
-            
-        // Remove optional token from rule
+        $this->optional = $this->base_rule[0] == '?';
         $rule = ltrim($rule, '?');
         
-        // Remove scope from rule
         if ($this->scope) {
             if (strpos($rule, $this->scope.':') !== false) {
                 $rule = str_replace($this->scope.':', '', $rule);
             } else {
-                return ['continue', null, null]; // rule out of scope
+                return ['continue', null, null]; // ignore rule out of scope
             }
         }
         
@@ -76,19 +69,19 @@ trait ParsesValidationDSL
             [$modifier, $rule_function] = explode(':', $rule, 2);
             
             if ($modifier == 'each') {
-                return ['each', null, null];
+                return ['each', null, null]; // call this class recursively
             }
             
             $value = $this->runModifier($modifier);
             
             if (is_null($value) && $this->optional) {
-                return ['continue', null, null]; // null value is optional
+                return ['continue', null, null]; // ignore optional null value
             }
             
             [$rule_name, $arguments] = $this->parseFunction($rule_function);
             
             if (!strpos($rule_name, ':')) {
-                $rule_name = $this->toCamelCase($rule_name); // last
+                $rule_name = $this->toCamelCase($rule_name); // it is THE rule
             }
         } else {
             $rule_name = $this->toCamelCase($rule) ;
@@ -127,11 +120,6 @@ trait ParsesValidationDSL
         }
         
         return true;
-    }
-    
-    private function isOptional(string $rule)
-    {
-        return $rule[0] == '?';
     }
 
     private function runModifier(string $modifier)

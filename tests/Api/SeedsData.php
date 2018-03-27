@@ -36,6 +36,7 @@ trait SeedsData
             "description" : "My description",
             "prep_time" : 10,
             "total_time" : 20,
+            "rating" : null,
             "vegetarian" : 1,
             "difficulty" : 3,
             "picture" : "https://example.com/picture.jpg",
