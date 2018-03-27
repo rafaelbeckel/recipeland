@@ -1,11 +1,11 @@
 # RECIPELAND
 
-Recipeland implements a REST API for managing Recipes. 
+Recipeland implements a REST API for managing Recipes.\
 It can list, create, read, update, delete, search and rate Recipes.
 
 It ships with the helper bash script `./recipe` for managing its deployment.
 
-To run the application and expose it to port 80, just call `./recipe cook`.
+To run the application and expose it to port 80, just call `./recipe cook`.\
 To see the full list of available commands, use `./recipe help`.
 
 
@@ -25,66 +25,67 @@ To see the full list of available commands, use `./recipe help`.
 #### public
 These endpoints are public and can be accessed by anyone:
 
-- `GET /recipes` 
+- `GET /recipes`\
 Will paginate and list all registered recipes. 
 
-- `GET /recipes/{id}`
-Will read only the given recipe
+- `GET /recipes/{id}`\
+Will read only the given recipe.
 
-- `GET /recipes/search?query='foo'` 
-Searches recipes by name, subtitle and description. It supports filtering by: author, rating, prep_time, total_time, vegetarian and difficulty. Example: `/recipes/search?vegetarian=1&total_time={"lt":30,"gte":25}&rating={"gt":4}`
+- `GET /recipes/search?query=foo`\
+Searches recipes by name, subtitle and description. It supports filtering by: `author`, `rating`, `prep_time`, `total_time`, `vegetarian` and `difficulty`.\
+Example: `/recipes/search?vegetarian=1&total_time={"lt":30,"gte":25}&rating={"gt":4}`
 
-- `POST /auth/login`
+- `POST /auth/login`\
 Provides a new JWT token for users who provide the correct username and password pair. See [Getting a token](#getting-a-token) session below for specific instructions.
 
 #### not protected 
-The endpoint below can be accessed by any unprivileged user, but it requires a valid token for taking requests. See [User Authentication](#user-authentication) session below for specific instructions.
+The endpoint below can be accessed by any unprivileged user, but it requires a valid token for taking requests. See [User Authentication](#user-authentication) session below for specific instructions:
 
-- `POST /recipes/{id}/rating`
+- `POST /recipes/{id}/rating`\
 Creates a new rating for the given recipe. A user can only rate each recipe once. Ratings cannot be edited. Authors cannot rate their own recipes. See [Rating recipes](#rating-recipes) session below for specific instructions. 
 
 #### protected 
-These endpoints can only be accessed by users with specific read / write permissions.
+These endpoints can only be accessed by users with specific read / write permissions:
 
-- `POST /recipes`
+- `POST /recipes`\
 Creates a new recipe. See [Creating and editing recipes](#creating-and-editing-recipes) session below for specific instructions. 
 
-- `PUT /recipes`
+- `PUT /recipes`\
 Updates (replaces) an existing recipe by providing a full body. The provided document MUST contain all mandatory keys, and it will entirely replace the old recipe. All ingredients and steps relationships will be destroyed and replaced by the provided ones. See [Creating and editing recipes](#creating-and-editing-recipes) session below for specific instructions. 
 
-- `PATCH /recipes`
+- `PATCH /recipes`\
 Updates part of an existing recipe by providing a partial body. The provided document MUST contain at least one key, and it will replace only the selected keys in the old recipe. Existing ingredients and steps relationships will be kept. See [Creating and editing recipes](#creating-and-editing-recipes) session below for specific instructions. 
 
-- `DELETE /recipes`
+- `DELETE /recipes`\
 Deletes the selected recipe. See [Deleting recipes](#deleting-recipes) session below for specific instructions. 
 
 ## User Authentication
 To access the protected routes, use one of these credentials:
 
 ##### Homer Simpson
-![Homer](public/static/homer.jpg)
+![Homer](public/static/Homer_Simpson.png)
 - username: homer
-- password: Marge1234!
+- password: Marge1234!\
 **Role:** client
-- Can only rate recipes.
+  - Can only rate recipes.
 
 ##### Luigi Risotto
-![Luigi](public/static/luigi.jpg)
+![Luigi](public/static/Luigi_Risotto.png)
 - username: luigi
-- password: Pasta1234!
+- password: Pasta1234!\
 **Role:** chef
-- Can create recipes
-- Can edit his own recipes
-- Can delete his own recipes
+  - Can create recipes
+  - Can edit his own recipes
+  - Can delete his own recipes
 
 ##### Montgomery Burns
-![Burns](public/static/burns.jpg)
+![Burns](public/static/Mr_Burns.png)
 - username: burns
-- password: Money1234!
+- password: Money1234!\
 **Role:** restaurant owner
-- Can create recipes
-- Can edit all recipes
-- Can delete all recipes
+  - Can create recipes
+  - Can edit all recipes
+  - Can delete all recipes
 
 
 ### Getting a token:
@@ -97,16 +98,19 @@ Do a POST request to `/auth/login` with a raw JSON body of:
 ```
 
 The server shall respond with:
-###### Header:
-**Authorization: Bearer your.token.here** (valid for 30 minutes)
-###### Body:
+##### Header:
+```bash
+  Authorization: Bearer your.token.here # Valid for 30 minutes
+```
+##### Body:
 ```json
 {
     "status":"Authorized"
 }
 ```
 
-Send this header to any protected route and you can use them. You MUST include the "Bearer" type before the token, and it MUST be in the `Authorization` header.
+Send this header to any protected route and you can use them.\
+You MUST include the "Bearer" type before the token, and it MUST be in the `Authorization` header.
 
 ### Creating and editing recipes:
 To create, replace (put) or update (patch) Recipes, send this raw JSON body to the appropriate endpoint:
@@ -156,16 +160,14 @@ For creating and replacing (put) you MUST provide all the keys above. For updati
 
 When creating a recipe, if an ingredient's `slug` or a step's `description` exists, the provided body will be ignored (the program will use the existing record in the database). When updating or patching, existing body keys will be replaced by the provided ones.
 
-###### Input validation:
-All keys are validated before insertion in the database. So, if you provide the incorrect type for some key, the server will respond with a 401 Unauthorized header with the validation message in the body. 
-
-Notice that it will always respond 401 for incorrect input, even with valid tokens, because input validation occurs before user authentication (checking for token presence in the headers is part of the validation itself), so the server does not know yet who is making the request.
+##### Input validation:
+All keys are validated before insertion in the database. So, if you provide the incorrect type for some key, the server will respond with a `401 Unauthorized` header with the validation message in the body. 
 
 ### Rating recipes:
 To create a rating for a given recipe, sinply provide a `rating` key in the body:
 ```json
 {
-    "rating" : 4
+    "rating" : 5
 }
 ```
 
