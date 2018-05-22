@@ -6,6 +6,10 @@ use BadMethodCallException;
 use InvalidArgumentException;
 use Recipeland\Helpers\Validator;
 
+/**
+ * Implements the Domain Specific Language for the Validator.
+ * Can be used by any class that implements ValidatorInterface. 
+ */
 trait ParsesValidationDSL
 {
     private $optional = false;
@@ -97,6 +101,7 @@ trait ParsesValidationDSL
         if ($this->canApply($rule_name, $value, $arguments)) {
             $rule = $this->ruleFactory->build($rule_name, $value);
             if (!call_user_func_array([$rule, 'apply'], $arguments)) {
+                $this->removeClassNameFromRule();
                 $this->message = $this->base_rule.' -> '.$rule->getMessage();
                 
                 return false;
@@ -199,5 +204,13 @@ trait ParsesValidationDSL
     private function toCamelCase(string $string): string
     {
         return str_replace('_', '', ucwords($string, '_'));
+    }
+
+    private function removeClassNameFromRule(): string
+    {
+        if (strpos($this->base_rule, 'instance_of') !== false) {
+            $this->base_rule = substr($this->base_rule,0,strrpos($this->base_rule,'instance_of'));
+            $this->base_rule .= 'instance_of()';
+        }
     }
 }
