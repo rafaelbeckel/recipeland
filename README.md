@@ -5,7 +5,7 @@ It can list, create, read, update, delete, search and rate Recipes.
 
 It ships with the helper bash script `./recipe` for managing its deployment.
 
-To run the application and expose it to port 80, just call `./recipe cook`.\
+To run the application and expose it to port 443, just call `./recipe cook`.\
 To see the full list of available commands, use `./recipe help`.
 
 
@@ -62,14 +62,14 @@ Deletes the selected recipe. See [Deleting recipes](#deleting-recipes) session b
 ## User Authentication
 To access the protected routes, use one of these credentials:
 
-##### Homer Simpson
+#### Homer Simpson
 ![Homer](public/static/Homer_Simpson.png)
 - username: homer
 - password: Marge1234!\
 **Role:** client
   - Can only rate recipes.
 
-##### Luigi Risotto
+#### Luigi Risotto
 ![Luigi](public/static/Luigi_Risotto.png)
 - username: luigi
 - password: Pasta1234!\
@@ -78,7 +78,7 @@ To access the protected routes, use one of these credentials:
   - Can edit his own recipes
   - Can delete his own recipes
 
-##### Montgomery Burns
+#### Montgomery Burns
 ![Burns](public/static/Mr_Burns.png)
 - username: burns
 - password: Money1234!\

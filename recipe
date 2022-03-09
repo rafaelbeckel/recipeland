@@ -51,7 +51,7 @@ is_installed() {
     which $1
     if [ $? -eq 0 ]
     then
-        $1 --version | grep -i "$1 version"
+        $1 --version
         if [ $? -eq 0 ]
         then
             true
@@ -161,21 +161,24 @@ cook() {
             finish
         else
             docker-compose up -d
-            echo ""
-            echo "All containers started!"
-            echo ""
-            echo "Run ${b}'$ ./recipe finish'${n} to stop the containers."
-            echo "Run ${b}'$ ./recipe taste'${n} to run all unit tests and api test."
-            echo "Run ${b}'$ ./recipe boil'${n} to debug the containers if anything goes wrong."
-            echo ""
-            echo "Visit ${b}https://$DOMAIN/recipes${n} to see our generated masterpieces!"
-            echo ""
-            echo "We use a self-signed SSL certificate, and it won't be accepted on most clients."
-            echo "You need to tell your browser or API client to accept it. Look at README for instructions."
-            echo ""
-            echo "Migrations can take a while. PHP-FPM won't start listening until they are all finished. So," 
-            echo "if you get a 504 Error from nginx, reload the page a few times until the service starts."
-            echo "You can make startup faster by reducing the number of generated recipes in .env file."
+            if [ $? -eq 0 ]
+            then
+                echo ""
+                echo "All containers started!"
+                echo ""
+                echo "Run ${b}'$ ./recipe finish'${n} to stop the containers."
+                echo "Run ${b}'$ ./recipe taste'${n} to run all unit tests and api test."
+                echo "Run ${b}'$ ./recipe boil'${n} to debug the containers if anything goes wrong."
+                echo ""
+                echo "Visit ${b}https://$DOMAIN/recipes${n} to see our generated masterpieces!"
+                echo ""
+                echo "We use a self-signed SSL certificate, and it won't be accepted on some clients."
+                echo "You may need to configure your browser or API client to accept self-signed certificates."
+                echo ""
+                echo "Composer and Migrations can take a while. PHP-FPM won't start listening until they're all finished." 
+                echo "So, if you get a 504 Error from nginx, reload the page a few times until the service starts."
+                echo "You can make startup faster by reducing the number of generated recipes in .env file."
+            fi
         fi
 
     fi
@@ -213,9 +216,12 @@ devour() {
 finish() {
     check_dependencies
     docker-compose down
-    echo ""
-    echo "${b}You finished cooking!${n}"
-    echo ""
+    if [ $? -eq 0 ]
+    then
+        echo ""
+        echo "${b}You finished cooking!${n}"
+        echo ""
+    fi
 }
 
 case $1 in

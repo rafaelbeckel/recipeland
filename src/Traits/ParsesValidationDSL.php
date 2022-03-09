@@ -29,6 +29,7 @@ trait ParsesValidationDSL
             
             if ($rule_name == 'continue') {
                 continue;
+
             } elseif ($rule_name == 'each') {
                 $rule = substr($rule, 5); // drop 'each:'
                 if (!is_iterable($payload) ||
@@ -36,14 +37,17 @@ trait ParsesValidationDSL
                 ) {
                     return false;
                 }
+
             } elseif (strpos($rule_name, ':')) {
                 if (!$this->each([$value], $rule_name, $this->base_rule)) {
                     return false;
                 }
+
             } elseif (!is_null($value)) {
                 if (!$this->applyRule($rule_name, $value, $arguments)) {
                     return false;
                 }
+                
             } elseif (!$this->optional) {
                 $this->message = $this->base_rule.' -> Mandatory rule is null.';
                 return false;
@@ -206,7 +210,7 @@ trait ParsesValidationDSL
         return str_replace('_', '', ucwords($string, '_'));
     }
 
-    private function removeClassNameFromRule(): string
+    private function removeClassNameFromRule()
     {
         if (strpos($this->base_rule, 'instance_of') !== false) {
             $this->base_rule = substr($this->base_rule,0,strrpos($this->base_rule,'instance_of'));
